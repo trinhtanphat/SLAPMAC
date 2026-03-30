@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self'; media-src 'self'; style-src 'self'; script-src 'self';">
+  <title>SlapMac</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <div class="logo">🖐</div>
+      <h1>SlapMac</h1>
+      <p class="subtitle">Tap your laptop, hear sounds!</p>
+    </div>
+
+    <!-- Main Toggle -->
+    <div class="toggle-section">
+      <label class="toggle-label">
+        <span id="status-text">Enabled</span>
+        <label class="switch">
+          <input type="checkbox" id="toggle-enabled" checked>
+          <span class="slider"></span>
+        </label>
+      </label>
+    </div>
+
+    <!-- Detection Status -->
+    <div class="status-section" id="detection-status">
+      <div class="status-indicator listening" id="status-indicator">
+        <span class="pulse"></span>
+        <span id="status-label">Listening for taps...</span>
+      </div>
+    </div>
+
+    <!-- Slap Counter -->
+    <div class="counter-section">
+      <span class="counter-label">Total Slaps</span>
+      <span class="counter-value" id="slap-count">0</span>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+      <!-- Detection Mode -->
+      <div class="control-group">
+        <label>Detection Mode</label>
+        <select id="detection-mode">
+          <option value="motion">Motion Sensor</option>
+          <option value="microphone">Microphone</option>
+        </select>
+      </div>
+
+      <!-- Sensitivity -->
+      <div class="control-group">
+        <label>Sensitivity <span id="sensitivity-value">1.5</span></label>
+        <input type="range" id="sensitivity" min="0.5" max="5" step="0.1" value="1.5">
+      </div>
+
+      <!-- Volume -->
+      <div class="control-group">
+        <label>Volume <span id="volume-value">100%</span></label>
+        <input type="range" id="volume" min="0" max="1" step="0.05" value="1">
+      </div>
+
+      <!-- Cooldown -->
+      <div class="control-group">
+        <label>Cooldown <span id="cooldown-value">300ms</span></label>
+        <input type="range" id="cooldown" min="100" max="2000" step="50" value="300">
+      </div>
+    </div>
+
+    <!-- Test Button -->
+    <button class="test-btn" id="test-sound">
+      🔊 Test Sound
+    </button>
+
+    <!-- Donate Section -->
+    <div class="donate-section">
+      <button class="donate-btn" id="show-donate">
+        ☕ Support / Donate
+      </button>
+    </div>
+
+    <!-- Donate Modal -->
+    <div class="modal" id="donate-modal" style="display: none;">
+      <div class="modal-content">
+        <button class="modal-close" id="close-donate">&times;</button>
+        <h2>☕ Support SlapMac</h2>
+        <p>SlapMac is free and always will be!<br>If you enjoy it, consider supporting 😊</p>
+        
+        <div class="qr-section">
+          <h3 class="qr-title momo">MoMo</h3>
+          <img src="../images/momo.jpeg" alt="MoMo QR Code" class="qr-image" loading="lazy">
+        </div>
+        
+        <div class="qr-section">
+          <h3 class="qr-title techcombank">Techcombank</h3>
+          <img src="../images/techcombank.jpeg" alt="Techcombank QR Code" class="qr-image" loading="lazy">
+        </div>
+        
+        <p class="thanks">Thank you for your support! 🙏</p>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <span>v1.0.0 • Free & Open Source</span>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

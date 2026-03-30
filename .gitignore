@@ -1,0 +1,42 @@
+# Xcode
+build/
+dist/
+*.xcuserdata
+*.xcworkspace
+DerivedData/
+*.moved-aside
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+xcuserdata/
+*.xccheckout
+*.xcscmblueprint
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# Node / Extension dev
+node_modules/
+*.log
+
+# .NET
+bin/
+obj/
+publish/
+*.user
+*.suo
+*.nupkg
+
+# Build outputs
+*.zip
+*.dmg

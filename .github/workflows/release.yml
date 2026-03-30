@@ -1,0 +1,383 @@
+name: Build & Release SlapMac
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g., 1.0.0)'
+        required: true
+        default: '1.0.0'
+
+permissions:
+  contents: write
+  packages: write
+
+env:
+  APP_NAME: SlapMac
+
+jobs:
+  # ============================================================
+  # Job 1: Build macOS App
+  # ============================================================
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup resources
+        run: |
+          mkdir -p SlapMac/SlapMac/Resources
+          cp audio/* SlapMac/SlapMac/Resources/ 2>/dev/null || true
+          cp qrcode/* SlapMac/SlapMac/Resources/ 2>/dev/null || true
+
+      - name: Build macOS app
+        run: |
+          cd SlapMac
+          xcodebuild -project SlapMac.xcodeproj \
+            -scheme SlapMac \
+            -configuration Release \
+            -derivedDataPath ../build-macos \
+            -arch arm64 -arch x86_64 \
+            CODE_SIGN_IDENTITY="-" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            ONLY_ACTIVE_ARCH=NO \
+            MACOSX_DEPLOYMENT_TARGET=13.0 \
+            2>&1 | tee ../build-macos.log
+
+      - name: Verify build output
+        run: |
+          APP_PATH="build-macos/Build/Products/Release/SlapMac.app"
+          if [ ! -d "$APP_PATH" ]; then
+            echo "::error::Build failed - SlapMac.app not found"
+            cat build-macos.log
+            exit 1
+          fi
+          echo "✅ Build successful"
+          ls -la "$APP_PATH"
+
+      - name: Create DMG
+        run: |
+          APP_PATH="build-macos/Build/Products/Release/SlapMac.app"
+          DMG_DIR="dmg-staging"
+          mkdir -p "$DMG_DIR"
+          cp -R "$APP_PATH" "$DMG_DIR/"
+          
+          # Create Applications symlink for drag-install
+          ln -s /Applications "$DMG_DIR/Applications"
+          
+          hdiutil create -volname "SlapMac" \
+            -srcfolder "$DMG_DIR" \
+            -ov -format UDZO \
+            "SlapMac-macOS.dmg"
+
+      - name: Create ZIP fallback
+        run: |
+          APP_PATH="build-macos/Build/Products/Release/SlapMac.app"
+          cd "$(dirname "$APP_PATH")"
+          zip -r "$GITHUB_WORKSPACE/SlapMac-macOS.zip" SlapMac.app
+
+      - name: Upload macOS artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-build
+          path: |
+            SlapMac-macOS.dmg
+            SlapMac-macOS.zip
+          retention-days: 5
+
+  # ============================================================
+  # Job 2: Build Windows App
+  # ============================================================
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Setup resources
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path "SlapMac-Windows/Resources"
+          Copy-Item "audio/*" "SlapMac-Windows/Resources/" -ErrorAction SilentlyContinue
+          Copy-Item "qrcode/*" "SlapMac-Windows/Resources/" -ErrorAction SilentlyContinue
+
+      - name: Restore dependencies
+        run: dotnet restore SlapMac-Windows/SlapMac.csproj
+
+      - name: Build Windows app (x64)
+        run: |
+          dotnet publish SlapMac-Windows/SlapMac.csproj `
+            -c Release `
+            -r win-x64 `
+            --self-contained true `
+            -p:PublishSingleFile=true `
+            -p:IncludeNativeLibrariesForSelfExtract=true `
+            -p:EnableCompressionInSingleFile=true `
+            -o publish/win-x64
+        shell: pwsh
+
+      - name: Build Windows app (arm64)
+        run: |
+          dotnet publish SlapMac-Windows/SlapMac.csproj `
+            -c Release `
+            -r win-arm64 `
+            --self-contained true `
+            -p:PublishSingleFile=true `
+            -p:IncludeNativeLibrariesForSelfExtract=true `
+            -p:EnableCompressionInSingleFile=true `
+            -o publish/win-arm64
+        shell: pwsh
+
+      - name: Copy resources to publish
+        shell: pwsh
+        run: |
+          # Ensure Resources are alongside exe
+          foreach ($arch in @("win-x64", "win-arm64")) {
+            $pubDir = "publish/$arch"
+            if (Test-Path $pubDir) {
+              New-Item -ItemType Directory -Force -Path "$pubDir/Resources"
+              Copy-Item "audio/*" "$pubDir/Resources/" -ErrorAction SilentlyContinue
+              Copy-Item "qrcode/*" "$pubDir/Resources/" -ErrorAction SilentlyContinue
+            }
+          }
+
+      - name: Package Windows x64
+        shell: pwsh
+        run: |
+          Compress-Archive -Path "publish/win-x64/*" -DestinationPath "SlapMac-Windows-x64.zip" -Force
+
+      - name: Package Windows arm64
+        shell: pwsh
+        run: |
+          Compress-Archive -Path "publish/win-arm64/*" -DestinationPath "SlapMac-Windows-arm64.zip" -Force
+
+      - name: Upload Windows artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-build
+          path: |
+            SlapMac-Windows-x64.zip
+            SlapMac-Windows-arm64.zip
+          retention-days: 5
+
+  # ============================================================
+  # Job 3: Build Chrome Extension
+  # ============================================================
+  build-extension:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup extension resources
+        run: |
+          mkdir -p SlapMac-Extension/audio
+          mkdir -p SlapMac-Extension/images
+          cp audio/* SlapMac-Extension/audio/ 2>/dev/null || true
+          cp qrcode/* SlapMac-Extension/images/ 2>/dev/null || true
+
+      - name: Generate extension icons
+        run: |
+          # Install ImageMagick for icon generation
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq imagemagick
+
+          cd SlapMac-Extension/icons
+
+          # Create a proper icon from SVG
+          if [ -f icon.svg ]; then
+            magick icon.svg -resize 16x16 icon16.png
+            magick icon.svg -resize 48x48 icon48.png
+            magick icon.svg -resize 128x128 icon128.png
+          else
+            # Fallback: create simple colored icons
+            for size in 16 48 128; do
+              magick -size ${size}x${size} \
+                gradient:'#e94560'-'#ff6b6b' \
+                -gravity center \
+                icon${size}.png
+            done
+          fi
+
+      - name: Validate manifest.json
+        run: |
+          python3 -c "
+          import json, sys
+          with open('SlapMac-Extension/manifest.json') as f:
+              m = json.load(f)
+          assert m['manifest_version'] == 3, 'Must be Manifest V3'
+          assert 'storage' in m.get('permissions', []), 'Missing storage permission'
+          print('✅ manifest.json valid')
+          print(f'  Name: {m[\"name\"]}')
+          print(f'  Version: {m[\"version\"]}')
+          "
+
+      - name: Package extension
+        run: |
+          cd SlapMac-Extension
+          zip -r ../SlapMac-Extension.zip . \
+            -x "*.sh" \
+            -x "*.svg" \
+            -x ".DS_Store" \
+            -x "__MACOSX/*"
+
+      - name: Upload extension artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: extension-build
+          path: SlapMac-Extension.zip
+          retention-days: 5
+
+  # ============================================================
+  # Job 4: Create Release with SHA256 Checksums
+  # ============================================================
+  release:
+    needs: [build-macos, build-windows, build-extension]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Collect release files
+        run: |
+          mkdir -p release
+          find artifacts -type f \( -name "*.zip" -o -name "*.dmg" \) -exec cp {} release/ \;
+          ls -la release/
+
+      - name: Generate SHA256 checksums
+        run: |
+          cd release
+          sha256sum * > SHA256SUMS.txt
+          echo ""
+          echo "============================================"
+          echo "  SHA256 Checksums"
+          echo "============================================"
+          cat SHA256SUMS.txt
+
+      - name: Verify checksums
+        run: |
+          cd release
+          sha256sum -c SHA256SUMS.txt
+          echo "✅ All checksums verified"
+
+      - name: Determine version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+            echo "tag=v${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            TAG="${{ github.ref_name }}"
+            echo "tag=$TAG" >> $GITHUB_OUTPUT
+            echo "version=${TAG#v}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create/update tag (workflow_dispatch)
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -f "${{ steps.version.outputs.tag }}" -m "Release ${{ steps.version.outputs.tag }}"
+          git push -f origin "${{ steps.version.outputs.tag }}"
+
+      - name: Generate release notes
+        id: notes
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          cat > RELEASE_NOTES.md << 'RELEASE_EOF'
+          ## 🖐 SlapMac v${VERSION}
+
+          Slap your laptop, hear funny sounds!
+
+          ### 📦 Downloads
+
+          | Platform | File | Architecture |
+          |----------|------|--------------|
+          | 🍎 macOS | `SlapMac-macOS.dmg` | Universal (Intel + Apple Silicon) |
+          | 🍎 macOS | `SlapMac-macOS.zip` | Universal (Intel + Apple Silicon) |
+          | 🪟 Windows | `SlapMac-Windows-x64.zip` | x64 |
+          | 🪟 Windows | `SlapMac-Windows-arm64.zip` | ARM64 |
+          | 🌐 Extension | `SlapMac-Extension.zip` | Chrome/Edge/Brave |
+
+          ### 🔐 Verify Downloads (SHA256)
+
+          After downloading, verify file integrity:
+
+          **macOS / Linux:**
+          ```bash
+          sha256sum -c SHA256SUMS.txt
+          # or for a single file:
+          sha256sum SlapMac-macOS.dmg
+          ```
+
+          **Windows PowerShell:**
+          ```powershell
+          Get-FileHash .\SlapMac-Windows-x64.zip -Algorithm SHA256
+          # Compare with SHA256SUMS.txt
+          ```
+
+          ### 📋 Install Instructions
+
+          **macOS:**
+          1. Download `SlapMac-macOS.dmg`
+          2. Open DMG and drag to Applications
+          3. Launch from Applications → appears in menu bar
+
+          **Windows:**
+          1. Download `SlapMac-Windows-x64.zip`
+          2. Extract and run `SlapMac.exe`
+          3. App appears in system tray
+
+          **Chrome Extension:**
+          1. Download `SlapMac-Extension.zip`
+          2. Extract to a folder
+          3. Open `chrome://extensions`
+          4. Enable Developer mode → Load unpacked → select folder
+
+          ### ✨ Features
+          - 🖐 Detects physical taps/slaps on your laptop
+          - 🔊 Plays funny sound effects
+          - 🎚️ Adjustable sensitivity, volume, cooldown
+          - 📊 Slap counter
+          - 🎵 Add custom sounds
+          - ☕ Donate via MoMo/Techcombank QR
+          - 🆓 100% Free & Open Source
+          RELEASE_EOF
+
+          # Replace version placeholder
+          sed -i "s/\${VERSION}/$VERSION/g" RELEASE_NOTES.md
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: "SlapMac ${{ steps.version.outputs.tag }}"
+          body_path: RELEASE_NOTES.md
+          draft: false
+          prerelease: false
+          files: |
+            release/SlapMac-macOS.dmg
+            release/SlapMac-macOS.zip
+            release/SlapMac-Windows-x64.zip
+            release/SlapMac-Windows-arm64.zip
+            release/SlapMac-Extension.zip
+            release/SHA256SUMS.txt
+          fail_on_unmatched_files: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
