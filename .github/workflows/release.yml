@@ -17,6 +17,7 @@ permissions:
 
 env:
   APP_NAME: SlapMac
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   # ============================================================
@@ -194,15 +195,15 @@ jobs:
 
           cd SlapMac-Extension/icons
 
-          # Create a proper icon from SVG
+          # Create a proper icon from SVG (ImageMagick v6 uses 'convert')
           if [ -f icon.svg ]; then
-            magick icon.svg -resize 16x16 icon16.png
-            magick icon.svg -resize 48x48 icon48.png
-            magick icon.svg -resize 128x128 icon128.png
+            convert icon.svg -resize 16x16 icon16.png
+            convert icon.svg -resize 48x48 icon48.png
+            convert icon.svg -resize 128x128 icon128.png
           else
             # Fallback: create simple colored icons
             for size in 16 48 128; do
-              magick -size ${size}x${size} \
+              convert -size ${size}x${size} \
                 gradient:'#e94560'-'#ff6b6b' \
                 -gravity center \
                 icon${size}.png
