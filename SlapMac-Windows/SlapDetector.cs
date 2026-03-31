@@ -26,6 +26,10 @@ namespace SlapMac
         private bool _suppressed;
         private DateTime _suppressUntil = DateTime.MinValue;
 
+        // Post-suppression recalibration to re-learn ambient noise
+        private const int PostSuppressionCalibrationCount = 20;
+        private int _recalibrationRemaining;
+
         public void Start()
         {
             if (_isRunning) return;
@@ -113,7 +117,22 @@ namespace SlapMac
                 // Don't adapt baseline during suppression (speaker output distorts it)
                 return;
             }
-            _suppressed = false;
+
+            // Transition out of suppression: force recalibration
+            if (_suppressed)
+            {
+                _suppressed = false;
+                _baselineAmplitude = 0;
+                _recalibrationRemaining = PostSuppressionCalibrationCount;
+            }
+
+            // Post-suppression recalibration: re-learn ambient noise before resuming detection
+            if (_recalibrationRemaining > 0)
+            {
+                _baselineAmplitude = Math.Max(_baselineAmplitude, rms);
+                _recalibrationRemaining--;
+                return;
+            }
 
             if (rms > Math.Max(threshold, minAbsolute))
             {
@@ -121,9 +140,9 @@ namespace SlapMac
                 {
                     _lastSlapTime = now;
 
-                    // Suppress detection for the duration of audio playback to prevent feedback loop
+                    // Suppress detection for longer than cooldown to cover full audio playback
                     _suppressed = true;
-                    _suppressUntil = now.AddMilliseconds(CooldownMs);
+                    _suppressUntil = now.AddMilliseconds(Math.Max(CooldownMs * 2, 3000));
 
                     // Don't adapt baseline on slap spikes
                     SlapDetected?.Invoke();
