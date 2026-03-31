@@ -47,8 +47,8 @@
       <div class="control-group">
         <label>Detection Mode</label>
         <select id="detection-mode">
-          <option value="motion">Motion Sensor</option>
-          <option value="microphone">Microphone</option>
+          <option value="microphone">Microphone (Desktop)</option>
+          <option value="motion">Motion Sensor (Mobile)</option>
         </select>
       </div>
 
@@ -66,8 +66,8 @@
 
       <!-- Cooldown -->
       <div class="control-group">
-        <label>Cooldown <span id="cooldown-value">300ms</span></label>
-        <input type="range" id="cooldown" min="100" max="2000" step="50" value="300">
+        <label>Cooldown <span id="cooldown-value">1500ms</span></label>
+        <input type="range" id="cooldown" min="500" max="5000" step="100" value="1500">
       </div>
     </div>
 
@@ -106,6 +106,8 @@
 
     <!-- Footer -->
     <div class="footer">
+      <span>⚠️ Keep popup open for detection to work</span>
+      <br>
       <span>v1.0.0 • Free & Open Source</span>
     </div>
   </div>

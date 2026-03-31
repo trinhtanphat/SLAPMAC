@@ -1,5 +1,6 @@
 package com.slapmac.app
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import android.widget.SeekBar
@@ -21,6 +22,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var volumeLabel: TextView
     private lateinit var cooldownSlider: SeekBar
     private lateinit var cooldownLabel: TextView
+    private lateinit var donateButton: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,6 +49,7 @@ class MainActivity : AppCompatActivity() {
         volumeLabel = findViewById(R.id.volumeLabel)
         cooldownSlider = findViewById(R.id.cooldownSlider)
         cooldownLabel = findViewById(R.id.cooldownLabel)
+        donateButton = findViewById(R.id.donateButton)
     }
 
     private fun setupListeners() {
@@ -105,6 +108,11 @@ class MainActivity : AppCompatActivity() {
             override fun onStartTrackingTouch(seekBar: SeekBar) {}
             override fun onStopTrackingTouch(seekBar: SeekBar) {}
         })
+
+        // Donate
+        donateButton.setOnClickListener {
+            startActivity(Intent(this, DonateActivity::class.java))
+        }
     }
 
     override fun onDestroy() {

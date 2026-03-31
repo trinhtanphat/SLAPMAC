@@ -5,8 +5,8 @@ const DEFAULT_STATE = {
   enabled: true,
   sensitivity: 1.5,
   volume: 1.0,
-  cooldown: 300,
-  detectionMode: 'motion', // 'motion' | 'microphone'
+  cooldown: 1500,
+  detectionMode: 'microphone', // 'motion' | 'microphone' — default to mic (motion only works on mobile)
   slapCount: 0
 };
 

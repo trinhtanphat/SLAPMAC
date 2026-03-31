@@ -187,7 +187,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
   }
 
-  // Microphone detection
+  // Microphone detection with adaptive baseline (matches Windows/Linux algorithm)
   function startMicrophoneDetection(s) {
     navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
       const audioContext = new AudioContext();
@@ -200,6 +200,15 @@ document.addEventListener('DOMContentLoaded', async () => {
       const dataArray = new Uint8Array(analyser.frequencyBinCount);
       let running = true;
 
+      // Adaptive baseline calibration
+      let baseline = 0;
+      let calibrationSamples = 0;
+      const calibrationTotal = 30;
+      let inSuppression = false;
+      let suppressionEndTime = 0;
+      let recalibrationCount = 0;
+      const recalibrationTotal = 20;
+
       const check = () => {
         if (!running) return;
         if (!state.enabled) {
@@ -209,20 +218,49 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         analyser.getByteFrequencyData(dataArray);
 
-        // Calculate average volume
+        // Calculate RMS-like average
         let sum = 0;
         for (let i = 0; i < dataArray.length; i++) {
           sum += dataArray[i];
         }
         const avg = sum / dataArray.length;
 
-        // Threshold based on sensitivity
-        const threshold = 200 / state.sensitivity;
+        // Calibration phase
+        if (calibrationSamples < calibrationTotal) {
+          baseline = Math.max(baseline, avg);
+          calibrationSamples++;
+          requestAnimationFrame(check);
+          return;
+        }
+
+        const now = Date.now();
+
+        // Post-suppression recalibration
+        if (inSuppression && now >= suppressionEndTime) {
+          inSuppression = false;
+          recalibrationCount = 0;
+        }
+
+        if (!inSuppression && recalibrationCount < recalibrationTotal) {
+          baseline = baseline * 0.9 + avg * 0.1;
+          recalibrationCount++;
+          requestAnimationFrame(check);
+          return;
+        }
+
+        // Slowly adapt baseline
+        baseline = baseline * 0.98 + avg * 0.02;
+
+        // Detection threshold
+        const threshold = (baseline + 30) / state.sensitivity;
 
         if (avg > threshold) {
-          const now = Date.now();
-          if (now - lastSlapTime > state.cooldown) {
+          // Extended suppression: 1 slap = 1 sound
+          const suppressionMs = Math.max(state.cooldown * 2, 3000);
+          if (now - lastSlapTime >= suppressionMs) {
             lastSlapTime = now;
+            inSuppression = true;
+            suppressionEndTime = now + suppressionMs;
             onSlapDetected();
           }
         }
@@ -280,8 +318,8 @@ document.addEventListener('DOMContentLoaded', async () => {
           enabled: true,
           sensitivity: 1.5,
           volume: 1.0,
-          cooldown: 300,
-          detectionMode: 'motion',
+          cooldown: 1500,
+          detectionMode: 'microphone',
           slapCount: 0
         };
         const s = response || defaults;

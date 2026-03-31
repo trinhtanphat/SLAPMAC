@@ -151,6 +151,15 @@
             android:thumbTint="#FFE94560"
             android:layout_marginTop="4dp" />
 
+        <!-- Donate Button -->
+        <Button
+            android:id="@+id/donateButton"
+            android:layout_width="200dp"
+            android:layout_height="48dp"
+            android:text="☕ Support / Donate"
+            android:textSize="14sp"
+            android:layout_marginTop="32dp" />
+
         <View
             android:layout_width="match_parent"
             android:layout_height="60dp" />
