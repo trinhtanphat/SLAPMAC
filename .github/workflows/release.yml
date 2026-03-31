@@ -2,8 +2,14 @@ name: Build & Release SlapMac
 
 on:
   push:
+    branches:
+      - '**'
     tags:
       - 'v*'
+  pull_request:
+    branches:
+      - main
+      - master
   workflow_dispatch:
     inputs:
       version:

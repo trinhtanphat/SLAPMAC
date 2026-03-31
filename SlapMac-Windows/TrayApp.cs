@@ -71,6 +71,20 @@ namespace SlapMac
             _trayIcon.DoubleClick += (s, e) => OnToggle(s!, e);
 
             _detector.Start();
+
+            // Show startup notification so user knows the app is running
+            _trayIcon.ShowBalloonTip(
+                3000,
+                "SlapMac is running! \ud83d\udd90",
+                $"Listening for taps/slaps...\n{_audio.SoundCount} sound(s) loaded.\nRight-click tray icon for options.",
+                ToolTipIcon.Info);
+
+            // Show welcome window on first launch
+            if (!System.IO.File.Exists(GetFirstLaunchFlagPath()))
+            {
+                ShowWelcomeWindow();
+                try { System.IO.File.WriteAllText(GetFirstLaunchFlagPath(), "1"); } catch { }
+            }
         }
 
         private Icon LoadIcon()
@@ -219,6 +233,80 @@ namespace SlapMac
                 _trayIcon.Dispose();
             }
             base.Dispose(disposing);
+        }
+
+        private static string GetFirstLaunchFlagPath()
+        {
+            var dir = System.IO.Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "SlapMac");
+            System.IO.Directory.CreateDirectory(dir);
+            return System.IO.Path.Combine(dir, ".launched");
+        }
+
+        private void ShowWelcomeWindow()
+        {
+            var form = new Form
+            {
+                Text = "Welcome to SlapMac! 🖐",
+                Size = new Size(460, 380),
+                StartPosition = FormStartPosition.CenterScreen,
+                FormBorderStyle = FormBorderStyle.FixedDialog,
+                MaximizeBox = false,
+                MinimizeBox = false,
+                BackColor = Color.FromArgb(26, 26, 46),
+                ForeColor = Color.FromArgb(224, 224, 224),
+                TopMost = true,
+            };
+
+            int y = 25;
+
+            var title = new Label
+            {
+                Text = "🖐 Welcome to SlapMac!",
+                Font = new Font("Segoe UI", 20, FontStyle.Bold),
+                ForeColor = Color.FromArgb(255, 215, 0),
+                AutoSize = true,
+                Location = new Point(80, y),
+            };
+            form.Controls.Add(title);
+            y += 55;
+
+            var desc = new Label
+            {
+                Text = "Slap your laptop, hear funny sounds!\n\n" +
+                       "✅  App is running in the system tray (bottom-right)\n" +
+                       "✅  Tap or slap your laptop to trigger sounds\n" +
+                       "✅  Right-click the tray icon for settings\n\n" +
+                       $"🔊  {_audio.SoundCount} sound(s) loaded\n" +
+                       "🎚️  Adjust sensitivity, volume & cooldown from tray menu\n" +
+                       "🎵  Add your own sounds via \"Add Custom Sound...\"",
+                Font = new Font("Segoe UI", 11),
+                ForeColor = Color.FromArgb(200, 200, 220),
+                Location = new Point(35, y),
+                Size = new Size(390, 200),
+            };
+            form.Controls.Add(desc);
+            y += 210;
+
+            var okBtn = new Button
+            {
+                Text = "Got It! Let's Slap! 🖐",
+                Font = new Font("Segoe UI", 12, FontStyle.Bold),
+                ForeColor = Color.White,
+                BackColor = Color.FromArgb(233, 69, 96),
+                FlatStyle = FlatStyle.Flat,
+                Size = new Size(250, 45),
+                Location = new Point(95, y),
+                Cursor = Cursors.Hand,
+            };
+            okBtn.FlatAppearance.BorderSize = 0;
+            okBtn.Click += (s, e) => form.Close();
+            form.Controls.Add(okBtn);
+            form.AcceptButton = okBtn;
+
+            form.Show();
+            form.Activate();
         }
     }
 }
