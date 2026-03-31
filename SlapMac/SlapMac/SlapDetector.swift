@@ -251,7 +251,8 @@ final class SlapDetector {
     
     private func triggerSlap() {
         let now = Date()
-        guard now.timeIntervalSince(lastSlapTime) >= cooldownInterval else { return }
+        let suppressionInterval = max(cooldownInterval * 2, 3.0)
+        guard now.timeIntervalSince(lastSlapTime) >= suppressionInterval else { return }
         lastSlapTime = now
         
         DispatchQueue.main.async { [weak self] in

@@ -46,3 +46,27 @@ SlapMac-Windows/Resources/*.png
 # Build outputs
 *.zip
 *.dmg
+*.apk
+*.ipa
+
+# iOS (XcodeGen output)
+SlapMac-iOS/*.xcodeproj
+SlapMac-iOS/build-ios/
+
+# Android
+SlapMac-Android/.gradle/
+SlapMac-Android/build/
+SlapMac-Android/app/build/
+SlapMac-Android/app/src/main/assets/audio/
+SlapMac-Android/app/src/main/assets/qrcode/
+SlapMac-Android/gradle/
+SlapMac-Android/gradlew
+SlapMac-Android/gradlew.bat
+*.apk
+local.properties
+
+# Linux
+SlapMac-Linux/__pycache__/
+SlapMac-Linux/*.pyc
+SlapMac-Linux/resources/
+SlapMac-Linux/venv/

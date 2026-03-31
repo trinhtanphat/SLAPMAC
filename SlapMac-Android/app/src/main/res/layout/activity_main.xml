@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FF161626"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:padding="24dp">
+
+        <!-- Title -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🖐 SlapMac"
+            android:textSize="32sp"
+            android:textColor="#FFE94560"
+            android:textStyle="bold"
+            android:layout_marginTop="32dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Slap your phone, hear funny sounds!"
+            android:textSize="14sp"
+            android:textColor="#FFAAAAAA"
+            android:layout_marginTop="8dp" />
+
+        <!-- Counter -->
+        <TextView
+            android:id="@+id/slapCounter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0"
+            android:textSize="96sp"
+            android:textColor="#FFE94560"
+            android:textStyle="bold"
+            android:fontFamily="monospace"
+            android:layout_marginTop="40dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="SLAPS"
+            android:textSize="18sp"
+            android:textColor="#FFFFFFFF"
+            android:letterSpacing="0.3" />
+
+        <!-- Toggle Button -->
+        <Button
+            android:id="@+id/toggleButton"
+            android:layout_width="200dp"
+            android:layout_height="56dp"
+            android:text="⏸ Pause"
+            android:textSize="16sp"
+            android:layout_marginTop="32dp" />
+
+        <!-- Test Sound -->
+        <Button
+            android:id="@+id/testButton"
+            android:layout_width="160dp"
+            android:layout_height="48dp"
+            android:text="🔊 Test Sound"
+            android:textSize="14sp"
+            android:layout_marginTop="12dp" />
+
+        <!-- Sounds info -->
+        <TextView
+            android:id="@+id/soundsInfo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0 sound(s) loaded"
+            android:textSize="12sp"
+            android:textColor="#FF888888"
+            android:layout_marginTop="8dp" />
+
+        <!-- Settings Header -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="⚙️ Settings"
+            android:textSize="20sp"
+            android:textColor="#FFFFFFFF"
+            android:textStyle="bold"
+            android:layout_marginTop="40dp" />
+
+        <!-- Sensitivity -->
+        <TextView
+            android:id="@+id/sensitivityLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Sensitivity: 1.5"
+            android:textSize="14sp"
+            android:textColor="#FFCCCCCC"
+            android:layout_marginTop="16dp" />
+
+        <SeekBar
+            android:id="@+id/sensitivitySlider"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:min="5"
+            android:max="40"
+            android:progress="15"
+            android:progressTint="#FFE94560"
+            android:thumbTint="#FFE94560"
+            android:layout_marginTop="4dp" />
+
+        <!-- Volume -->
+        <TextView
+            android:id="@+id/volumeLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Volume: 100%"
+            android:textSize="14sp"
+            android:textColor="#FFCCCCCC"
+            android:layout_marginTop="16dp" />
+
+        <SeekBar
+            android:id="@+id/volumeSlider"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:min="0"
+            android:max="100"
+            android:progress="100"
+            android:progressTint="#FFE94560"
+            android:thumbTint="#FFE94560"
+            android:layout_marginTop="4dp" />
+
+        <!-- Cooldown -->
+        <TextView
+            android:id="@+id/cooldownLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Cooldown: 1500ms"
+            android:textSize="14sp"
+            android:textColor="#FFCCCCCC"
+            android:layout_marginTop="16dp" />
+
+        <SeekBar
+            android:id="@+id/cooldownSlider"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:min="5"
+            android:max="50"
+            android:progress="15"
+            android:progressTint="#FFE94560"
+            android:thumbTint="#FFE94560"
+            android:layout_marginTop="4dp" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="60dp" />
+
+    </LinearLayout>
+</ScrollView>

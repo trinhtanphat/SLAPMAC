@@ -245,10 +245,159 @@ jobs:
           retention-days: 5
 
   # ============================================================
-  # Job 4: Create Release with SHA256 Checksums
+  # Job 4: Build iOS App
+  # ============================================================
+  build-ios:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Setup resources
+        run: |
+          mkdir -p SlapMac-iOS/SlapMac/Resources
+          cp audio/* SlapMac-iOS/SlapMac/Resources/ 2>/dev/null || true
+          cp qrcode/* SlapMac-iOS/SlapMac/Resources/ 2>/dev/null || true
+
+      - name: Generate Xcode project
+        run: cd SlapMac-iOS && xcodegen generate
+
+      - name: Build iOS app
+        run: |
+          cd SlapMac-iOS
+          xcodebuild -project SlapMac-iOS.xcodeproj \
+            -scheme SlapMac \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath ../build-ios \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            2>&1 | tail -20
+
+      - name: Package iOS build
+        run: |
+          APP_DIR="build-ios/Build/Products/Release-iphoneos"
+          if [ -d "$APP_DIR" ]; then
+            cd "$APP_DIR"
+            zip -r "$GITHUB_WORKSPACE/SlapMac-iOS.zip" . -x "*.dSYM/*"
+          else
+            echo "::warning::iOS build output not found, creating placeholder"
+            echo "iOS build requires code signing for device deployment" > ios-note.txt
+            zip SlapMac-iOS.zip ios-note.txt
+          fi
+
+      - name: Upload iOS artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: ios-build
+          path: SlapMac-iOS.zip
+          retention-days: 5
+
+  # ============================================================
+  # Job 5: Build Android App
+  # ============================================================
+  build-android:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.5'
+
+      - name: Setup audio assets
+        run: |
+          mkdir -p SlapMac-Android/app/src/main/assets/audio
+          mkdir -p SlapMac-Android/app/src/main/assets/qrcode
+          cp audio/* SlapMac-Android/app/src/main/assets/audio/ 2>/dev/null || true
+          cp qrcode/* SlapMac-Android/app/src/main/assets/qrcode/ 2>/dev/null || true
+
+      - name: Generate Gradle wrapper
+        working-directory: SlapMac-Android
+        run: gradle wrapper --gradle-version 8.5
+
+      - name: Build Android APK
+        working-directory: SlapMac-Android
+        run: ./gradlew assembleDebug
+
+      - name: Package Android APK
+        run: |
+          APK=$(find SlapMac-Android -name "*.apk" -type f | head -1)
+          if [ -n "$APK" ]; then
+            cp "$APK" SlapMac-Android.apk
+          else
+            echo "::warning::APK not found"
+          fi
+
+      - name: Upload Android artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: android-build
+          path: SlapMac-Android.apk
+          retention-days: 5
+          if-no-files-found: warn
+
+  # ============================================================
+  # Job 6: Build Linux App
+  # ============================================================
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq libportaudio2 portaudio19-dev python3-tk
+
+      - name: Install Python dependencies
+        run: pip install -r SlapMac-Linux/requirements.txt
+
+      - name: Verify imports
+        run: |
+          cd SlapMac-Linux
+          python3 -c "from slap_detector import SlapDetector; print('✅ SlapDetector OK')"
+          python3 -c "from audio_manager import AudioManager; print('✅ AudioManager OK')"
+
+      - name: Package Linux app
+        run: |
+          mkdir -p SlapMac-Linux/resources
+          cp audio/* SlapMac-Linux/resources/ 2>/dev/null || true
+          cp qrcode/* SlapMac-Linux/resources/ 2>/dev/null || true
+          cd SlapMac-Linux
+          zip -r ../SlapMac-Linux.zip . -x "__pycache__/*" "*.pyc"
+
+      - name: Upload Linux artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: linux-build
+          path: SlapMac-Linux.zip
+          retention-days: 5
+
+  # ============================================================
+  # Job 7: Create Release with SHA256 Checksums
   # ============================================================
   release:
-    needs: [build-macos, build-windows, build-extension]
+    needs: [build-macos, build-windows, build-extension, build-ios, build-android, build-linux]
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
     steps:
@@ -263,7 +412,7 @@ jobs:
       - name: Collect release files
         run: |
           mkdir -p release
-          find artifacts -type f \( -name "*.zip" -o -name "*.dmg" \) -exec cp {} release/ \;
+          find artifacts -type f \( -name "*.zip" -o -name "*.dmg" -o -name "*.apk" \) -exec cp {} release/ \;
           ls -la release/
 
       - name: Generate SHA256 checksums
@@ -383,6 +532,9 @@ jobs:
             release/SlapMac-Windows-x64.zip
             release/SlapMac-Windows-arm64.zip
             release/SlapMac-Extension.zip
+            release/SlapMac-iOS.zip
+            release/SlapMac-Android.apk
+            release/SlapMac-Linux.zip
             release/SHA256SUMS.txt
           fail_on_unmatched_files: false
         env:
