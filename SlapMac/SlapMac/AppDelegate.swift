@@ -20,6 +20,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             audioManager: audioManager!
         )
         
+        // Listen for preference changes from PreferencesView
+        NotificationCenter.default.addObserver(forName: NSNotification.Name("PreferencesChanged"), object: nil, queue: .main) { [weak self] _ in
+            let defaults = UserDefaults.standard
+            let sens = defaults.double(forKey: "sensitivity")
+            let vol = defaults.double(forKey: "volume")
+            let cool = defaults.double(forKey: "cooldown")
+            if sens > 0 { self?.slapDetector?.currentSensitivity = sens }
+            if vol > 0 { self?.audioManager?.currentVolume = Float(vol) }
+            if cool > 0 { self?.slapDetector?.currentCooldown = cool }
+        }
+        
         slapDetector?.startDetecting()
     }
     

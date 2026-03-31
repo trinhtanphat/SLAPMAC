@@ -20,7 +20,11 @@ namespace SlapMac
         public event Action? SlapDetected;
 
         public double Sensitivity { get; set; } = 1.5;
-        public int CooldownMs { get; set; } = 300;
+        public int CooldownMs { get; set; } = 1500;
+
+        // Suppression window to prevent audio feedback loops
+        private bool _suppressed;
+        private DateTime _suppressUntil = DateTime.MinValue;
 
         public void Start()
         {
@@ -102,16 +106,26 @@ namespace SlapMac
             float threshold = _baselineAmplitude * (float)(3.0 / Sensitivity);
             float minAbsolute = 0.05f / (float)Sensitivity;
 
+            // If we're in the suppression window (audio playing back), skip detection
+            var now = DateTime.UtcNow;
+            if (_suppressed && now < _suppressUntil)
+            {
+                // Don't adapt baseline during suppression (speaker output distorts it)
+                return;
+            }
+            _suppressed = false;
+
             if (rms > Math.Max(threshold, minAbsolute))
             {
-                var now = DateTime.UtcNow;
                 if ((now - _lastSlapTime).TotalMilliseconds >= CooldownMs)
                 {
                     _lastSlapTime = now;
 
-                    // Slowly adapt baseline (learning from ambient noise changes)
-                    _baselineAmplitude = _baselineAmplitude * 0.95f + rms * 0.002f;
+                    // Suppress detection for the duration of audio playback to prevent feedback loop
+                    _suppressed = true;
+                    _suppressUntil = now.AddMilliseconds(CooldownMs);
 
+                    // Don't adapt baseline on slap spikes
                     SlapDetected?.Invoke();
                 }
             }

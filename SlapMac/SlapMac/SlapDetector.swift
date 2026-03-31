@@ -8,7 +8,7 @@ final class SlapDetector {
     private var onSlapDetected: (() -> Void)?
     private var isRunning = false
     private var sensitivity: Double = 1.5
-    private var cooldownInterval: TimeInterval = 0.3
+    private var cooldownInterval: TimeInterval = 1.5
     private var lastSlapTime: Date = .distantPast
     
     // For lid accelerometer approach

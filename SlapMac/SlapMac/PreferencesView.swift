@@ -1,10 +1,10 @@
 import SwiftUI
 
 struct PreferencesView: View {
-    @State private var sensitivity: Double = 1.5
-    @State private var volume: Double = 1.0
-    @State private var cooldown: Double = 0.3
-    @State private var launchAtLogin: Bool = false
+    @State private var sensitivity: Double = UserDefaults.standard.double(forKey: "sensitivity") == 0 ? 1.5 : UserDefaults.standard.double(forKey: "sensitivity")
+    @State private var volume: Double = UserDefaults.standard.double(forKey: "volume") == 0 ? 1.0 : UserDefaults.standard.double(forKey: "volume")
+    @State private var cooldown: Double = UserDefaults.standard.double(forKey: "cooldown") == 0 ? 1.5 : UserDefaults.standard.double(forKey: "cooldown")
+    @State private var launchAtLogin: Bool = UserDefaults.standard.bool(forKey: "launchAtLogin")
     
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
@@ -74,14 +74,27 @@ struct PreferencesView: View {
                 Button("Reset to Defaults") {
                     sensitivity = 1.5
                     volume = 1.0
-                    cooldown = 0.3
+                    cooldown = 1.5
                     launchAtLogin = false
+                    savePreferences()
                 }
                 .buttonStyle(.bordered)
             }
         }
         .padding(24)
         .frame(width: 420, height: 450)
+        .onChange(of: sensitivity) { _ in savePreferences() }
+        .onChange(of: volume) { _ in savePreferences() }
+        .onChange(of: cooldown) { _ in savePreferences() }
+        .onChange(of: launchAtLogin) { _ in savePreferences() }
+    }
+    
+    private func savePreferences() {
+        UserDefaults.standard.set(sensitivity, forKey: "sensitivity")
+        UserDefaults.standard.set(volume, forKey: "volume")
+        UserDefaults.standard.set(cooldown, forKey: "cooldown")
+        UserDefaults.standard.set(launchAtLogin, forKey: "launchAtLogin")
+        NotificationCenter.default.post(name: NSNotification.Name("PreferencesChanged"), object: nil)
     }
 }
 

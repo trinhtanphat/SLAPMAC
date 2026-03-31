@@ -30,4 +30,14 @@
     </None>
   </ItemGroup>
 
+  <!-- Copy shared audio and qrcode assets to Resources output -->
+  <Target Name="CopySharedAssets" BeforeTargets="Build">
+    <ItemGroup>
+      <AudioFiles Include="..\audio\*" />
+      <QRCodeFiles Include="..\qrcode\*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(AudioFiles)" DestinationFolder="Resources" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(QRCodeFiles)" DestinationFolder="Resources" SkipUnchangedFiles="true" />
+  </Target>
+
 </Project>

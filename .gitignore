@@ -37,6 +37,12 @@ publish/
 *.suo
 *.nupkg
 
+# Auto-copied resources (built from root audio/ and qrcode/)
+SlapMac-Windows/Resources/*.mp3
+SlapMac-Windows/Resources/*.jpeg
+SlapMac-Windows/Resources/*.jpg
+SlapMac-Windows/Resources/*.png
+
 # Build outputs
 *.zip
 *.dmg

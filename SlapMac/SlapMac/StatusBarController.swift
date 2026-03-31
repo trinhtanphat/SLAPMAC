@@ -125,6 +125,15 @@ final class StatusBarController {
         
         menu.addItem(NSMenuItem.separator())
         
+        // Preferences
+        let prefsItem = NSMenuItem(
+            title: "Preferences...",
+            action: #selector(showPreferences),
+            keyEquivalent: ","
+        )
+        prefsItem.target = self
+        menu.addItem(prefsItem)
+        
         // Donate
         let donateItem = NSMenuItem(
             title: "☕ Donate / Support",
@@ -242,6 +251,32 @@ final class StatusBarController {
                 _ = self?.audioManager.addCustomSoundFromURL(url)
             }
         }
+    }
+    
+    @objc private func showPreferences() {
+        if let window = preferencesWindow {
+            window.makeKeyAndOrderFront(nil)
+            NSApp.activate(ignoringOtherApps: true)
+            return
+        }
+        
+        let prefsView = PreferencesView()
+        let hostingView = NSHostingView(rootView: prefsView)
+        
+        let window = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 420, height: 450),
+            styleMask: [.titled, .closable, .miniaturizable],
+            backing: .buffered,
+            defer: false
+        )
+        window.title = "SlapMac Preferences"
+        window.contentView = hostingView
+        window.center()
+        window.isReleasedWhenClosed = false
+        window.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
+        
+        preferencesWindow = window
     }
     
     @objc private func showDonate() {

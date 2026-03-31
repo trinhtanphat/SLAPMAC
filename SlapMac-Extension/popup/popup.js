@@ -260,7 +260,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // Audio playback
-  const audioFiles = ['gentle-feminine-groan.mp3'];
+  const audioFiles = ['moan-female-active.mp3', 'gentle-feminine-groan.mp3'];
 
   function playSound(volume) {
     const file = audioFiles[Math.floor(Math.random() * audioFiles.length)];

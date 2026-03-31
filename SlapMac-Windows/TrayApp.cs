@@ -182,8 +182,9 @@ namespace SlapMac
         private void OnDonate(object? sender, EventArgs e)
         {
             var form = new DonateForm();
+            form.TopMost = true;
             form.Show();
-            form.BringToFront();
+            form.Activate();
         }
 
         private void OnAbout(object? sender, EventArgs e)

@@ -102,6 +102,7 @@ xcodebuild -project SlapMac.xcodeproj -scheme SlapMac -configuration Release bui
 Uses **microphone-based detection** — analyzes audio amplitude spikes from physical taps on the laptop body. Features:
 - Adaptive baseline calibration (adjusts to ambient noise)
 - RMS amplitude analysis at 44.1kHz
+- Audio feedback loop prevention (suppression window)
 - Configurable sensitivity and cooldown
 
 ### Install
@@ -113,12 +114,7 @@ Uses **microphone-based detection** — analyzes audio amplitude spikes from phy
 
 ### Build from Source
 ```powershell
-# Setup resources
-New-Item -ItemType Directory -Force -Path "SlapMac-Windows/Resources"
-Copy-Item "audio/*" "SlapMac-Windows/Resources/"
-Copy-Item "qrcode/*" "SlapMac-Windows/Resources/"
-
-# Build
+# Build (resources are copied automatically from audio/ and qrcode/)
 dotnet publish SlapMac-Windows/SlapMac.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o publish
 ```
 
@@ -161,6 +157,7 @@ Requires [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0).
 ```
 SLAPMAC/
 ├── audio/                          # Sound files
+│   ├── moan-female-active.mp3
 │   └── gentle-feminine-groan.mp3
 ├── qrcode/                         # Donation QR codes
 │   ├── momo.jpeg
