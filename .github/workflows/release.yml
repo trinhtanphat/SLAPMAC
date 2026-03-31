@@ -308,13 +308,13 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: '17'
           distribution: 'temurin'
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v5
         with:
           gradle-version: '8.5'
 
@@ -360,7 +360,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.11'
 
@@ -468,6 +468,9 @@ jobs:
           | 🍎 macOS | `SlapMac-macOS.zip` | Universal (Intel + Apple Silicon) |
           | 🪟 Windows | `SlapMac-Windows-x64.zip` | x64 |
           | 🪟 Windows | `SlapMac-Windows-arm64.zip` | ARM64 |
+          | 📱 iOS | `SlapMac-iOS.zip` | iPhone + iPad |
+          | 🤖 Android | `SlapMac-Android.apk` | All devices |
+          | 🐧 Linux | `SlapMac-Linux.zip` | x64 |
           | 🌐 Extension | `SlapMac-Extension.zip` | Chrome/Edge/Brave |
 
           ### 🔐 Verify Downloads (SHA256)
@@ -505,13 +508,24 @@ jobs:
           3. Open `chrome://extensions`
           4. Enable Developer mode → Load unpacked → select folder
 
+          **Android:**
+          1. Download `SlapMac-Android.apk`
+          2. Enable "Install unknown apps" in Settings
+          3. Open the APK to install
+
+          **Linux:**
+          1. Download `SlapMac-Linux.zip`
+          2. Extract and run `./install.sh`
+          3. Launch with `slapmac` command
+
           ### ✨ Features
-          - 🖐 Detects physical taps/slaps on your laptop
+          - 🖐 Detects physical taps/slaps on your device
           - 🔊 Plays funny sound effects
           - 🎚️ Adjustable sensitivity, volume, cooldown
           - 📊 Slap counter
           - 🎵 Add custom sounds
           - ☕ Donate via MoMo/Techcombank QR
+          - 📱 Available on 6 platforms
           - 🆓 100% Free & Open Source
           RELEASE_EOF
 

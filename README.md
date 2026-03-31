@@ -2,7 +2,7 @@
 
 **Slap your laptop, hear funny sounds!**
 
-SlapMac detects physical taps and slaps on your laptop and plays amusing sound effects. Available as a **macOS app**, **Windows app**, and **Chrome browser extension**.
+SlapMac detects physical taps and slaps on your laptop/phone and plays amusing sound effects. Available as a **macOS app**, **Windows app**, **iOS app**, **Android app**, **Linux app**, and **Chrome browser extension**.
 
 [![Build & Release](../../actions/workflows/release.yml/badge.svg)](../../actions/workflows/release.yml)
 
@@ -15,6 +15,9 @@ SlapMac detects physical taps and slaps on your laptop and plays amusing sound e
 | 🍎 macOS | [SlapMac-macOS.dmg](../../releases/latest) | Universal (Intel + Apple Silicon) |
 | 🪟 Windows | [SlapMac-Windows-x64.zip](../../releases/latest) | x64 |
 | 🪟 Windows | [SlapMac-Windows-arm64.zip](../../releases/latest) | ARM64 |
+| 📱 iOS | [SlapMac-iOS.zip](../../releases/latest) | iPhone + iPad |
+| 🤖 Android | [SlapMac-Android.apk](../../releases/latest) | All devices |
+| 🐧 Linux | [SlapMac-Linux.zip](../../releases/latest) | x64 |
 | 🌐 Chrome | [SlapMac-Extension.zip](../../releases/latest) | All browsers |
 
 > All releases include `SHA256SUMS.txt` for integrity verification.
@@ -122,6 +125,116 @@ Requires [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0).
 
 ---
 
+## 📱 iOS App
+
+### Requirements
+- iOS 17.0 or later
+- iPhone or iPad with accelerometer
+
+### How It Works
+Uses **CoreMotion accelerometer** to detect physical taps. Features:
+- Adaptive baseline calibration (50 samples at startup)
+- Real-time magnitude calculation vs dynamic baseline
+- Extended suppression window to prevent multi-triggers
+- SwiftUI interface with tabs: Home, Settings, Donate
+
+### Install
+1. Download `SlapMac-iOS.zip` from [Releases](../../releases/latest)
+2. Requires Xcode for sideloading or TestFlight distribution
+3. Open the project and build to your device
+
+### Build from Source
+```bash
+# Install XcodeGen
+brew install xcodegen
+
+# Copy resources
+mkdir -p SlapMac-iOS/SlapMac/Resources
+cp audio/* SlapMac-iOS/SlapMac/Resources/
+cp qrcode/* SlapMac-iOS/SlapMac/Resources/
+
+# Generate Xcode project & build
+cd SlapMac-iOS
+xcodegen generate
+xcodebuild -project SlapMac-iOS.xcodeproj -scheme SlapMac -configuration Release -sdk iphoneos
+```
+
+---
+
+## 🤖 Android App
+
+### Requirements
+- Android 8.0 (API 26) or later
+- Device with accelerometer sensor
+
+### How It Works
+Uses **SensorManager TYPE_ACCELEROMETER** at game-speed polling rate. Features:
+- Calibration phase with dynamic baseline
+- Adaptive sensitivity based on ambient vibration
+- Extended suppression window (same algorithm as all platforms)
+- Material3 dark theme UI
+
+### Install
+1. Download `SlapMac-Android.apk` from [Releases](../../releases/latest)
+2. Enable "Install unknown apps" in your device settings
+3. Open the APK to install
+4. Tap your phone! 🖐💥
+
+### Build from Source
+```bash
+# Copy audio assets
+mkdir -p SlapMac-Android/app/src/main/assets/audio
+cp audio/* SlapMac-Android/app/src/main/assets/audio/
+
+# Build
+cd SlapMac-Android
+./gradlew assembleDebug
+```
+
+Requires JDK 17 and Android SDK.
+
+---
+
+## 🐧 Linux App
+
+### Requirements
+- Python 3.8+
+- PortAudio (for microphone input)
+- Tkinter (for GUI)
+
+### How It Works
+Uses **sounddevice + numpy** for microphone-based RMS detection. Features:
+- Adaptive baseline with rolling average
+- Post-suppression recalibration (same as Windows)
+- Extended suppression window to prevent multi-triggers
+- Tkinter dark-themed GUI
+
+### Install (Quick)
+```bash
+cd SlapMac-Linux
+chmod +x install.sh
+./install.sh
+```
+
+### Install (Manual)
+```bash
+# Install system dependencies
+sudo apt install python3-pip python3-venv python3-tk libportaudio2 portaudio19-dev
+
+# Copy resources
+mkdir -p SlapMac-Linux/resources
+cp audio/* SlapMac-Linux/resources/
+
+# Install Python packages
+pip install -r SlapMac-Linux/requirements.txt
+
+# Run
+cd SlapMac-Linux
+python3 slapmac.py
+```
+
+---
+
 ## 🌐 Chrome Extension
 
 ### Requirements
@@ -179,8 +292,41 @@ SLAPMAC/
 │   ├── Program.cs                  # Entry point + single instance
 │   ├── SlapDetector.cs             # Microphone-based detection
 │   ├── AudioManager.cs             # NAudio playback
+│   ├── MainForm.cs                 # Main window UI
+│   ├── SettingsForm.cs             # Settings window
 │   ├── TrayApp.cs                  # System tray UI
 │   └── DonateForm.cs               # Donate window
+├── SlapMac-iOS/                    # iOS App (SwiftUI + CoreMotion)
+│   ├── project.yml                 # XcodeGen config
+│   └── SlapMac/
+│       ├── SlapMacApp.swift        # App entry point
+│       ├── ContentView.swift       # Main UI with tabs
+│       ├── SlapDetector.swift      # CoreMotion accelerometer
+│       ├── AudioManager.swift      # AVAudioPlayer playback
+│       ├── SettingsView.swift      # Settings tab
+│       ├── DonateView.swift        # Donate tab
+│       ├── Info.plist
+│       └── Assets.xcassets/
+├── SlapMac-Android/                # Android App (Kotlin)
+│   ├── build.gradle.kts
+│   ├── settings.gradle.kts
+│   └── app/
+│       ├── build.gradle.kts
+│       └── src/main/
+│           ├── AndroidManifest.xml
+│           ├── kotlin/com/slapmac/
+│           │   ├── MainActivity.kt
+│           │   ├── SlapDetector.kt # SensorManager accelerometer
+│           │   └── AudioManager.kt # MediaPlayer from assets
+│           └── res/
+│               ├── layout/activity_main.xml
+│               └── values/
+├── SlapMac-Linux/                  # Linux App (Python + tkinter)
+│   ├── slapmac.py                  # Main GUI
+│   ├── slap_detector.py            # sounddevice mic detection
+│   ├── audio_manager.py            # pygame playback
+│   ├── requirements.txt
+│   └── install.sh                  # Auto-installer
 ├── SlapMac-Extension/              # Chrome Extension (Manifest V3)
 │   ├── manifest.json
 │   ├── background/service-worker.js
@@ -215,7 +361,10 @@ Or use **Actions → Run workflow** for manual dispatch.
 1. **macOS Job** — Builds Universal binary (arm64 + x86_64), creates DMG + ZIP
 2. **Windows Job** — Builds .NET 8 self-contained EXE for x64 and ARM64
 3. **Extension Job** — Validates manifest, generates icons, packages ZIP
-4. **Release Job** — Generates SHA256 checksums, creates GitHub Release with all artifacts
+4. **iOS Job** — Generates Xcode project via XcodeGen, builds for iphoneos
+5. **Android Job** — Sets up JDK 17 + Gradle, builds debug APK
+6. **Linux Job** — Sets up Python 3.11, validates imports, packages ZIP
+7. **Release Job** — Generates SHA256 checksums, creates GitHub Release with all artifacts
 
 ### Security Measures
 - ✅ SHA256 checksums for all release artifacts
@@ -264,9 +413,12 @@ xcrun stapler staple SlapMac.dmg
 |----------|-----|
 | macOS | Menu bar → Add Custom Sound... → select files |
 | Windows | System tray → Add Custom Sound... → select files |
+| iOS | Sounds bundled in app (add via Xcode) |
+| Android | Add files to `assets/audio/` folder → rebuild |
+| Linux | GUI → Add Custom Sound button → select files |
 | Extension | Add files to `audio/` folder → update `popup.js` → reload |
 
-Supported formats: MP3, WAV, AIFF, M4A, AAC, CAF (macOS), WMA, OGG (Windows)
+Supported formats: MP3, WAV, AIFF, M4A, AAC, CAF (macOS/iOS), WMA, OGG (Windows/Linux/Android)
 
 ---
 

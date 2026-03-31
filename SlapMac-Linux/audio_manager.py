@@ -30,8 +30,8 @@ class AudioManager:
             if ext in extensions:
                 full_path = os.path.join(self.resource_dir, f)
                 # Path containment check
-                if os.path.abspath(full_path).startswith(
-                        os.path.abspath(self.resource_dir)):
+                if os.path.realpath(full_path).startswith(
+                        os.path.realpath(self.resource_dir)):
                     self.sound_files.append(full_path)
 
     @property
@@ -67,7 +67,7 @@ class AudioManager:
         dest = os.path.join(self.resource_dir, filename)
 
         # Path containment check
-        if not os.path.abspath(dest).startswith(os.path.abspath(self.resource_dir)):
+        if not os.path.realpath(dest).startswith(os.path.realpath(self.resource_dir)):
             return False
 
         shutil.copy2(filepath, dest)

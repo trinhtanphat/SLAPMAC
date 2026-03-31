@@ -130,7 +130,7 @@ final class SlapDetector {
                 &outputSize
             )
             
-            guard kr == KERN_SUCCESS else { return }
+            guard kr == KERN_SUCCESS, outputSize == MemoryLayout<SMSData>.size else { return }
             
             let magnitude = sqrt(
                 Double(smsData.x) * Double(smsData.x) +
