@@ -99,7 +99,7 @@ namespace SlapMac
                 fileName = string.Join("_",
                     fileName.Split(Path.GetInvalidFileNameChars(), StringSplitOptions.RemoveEmptyEntries));
 
-                if (string.IsNullOrWhiteSpace(fileName)) return false;
+                if (string.IsNullOrWhiteSpace(fileName) || fileName.Contains("..")) return false;
 
                 var appData = Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
@@ -107,6 +107,9 @@ namespace SlapMac
                 Directory.CreateDirectory(appData);
 
                 var dest = Path.Combine(appData, fileName);
+                // Verify resolved path is still inside appData (prevent traversal)
+                if (!Path.GetFullPath(dest).StartsWith(Path.GetFullPath(appData), StringComparison.OrdinalIgnoreCase))
+                    return false;
                 File.Copy(filePath, dest, overwrite: true);
                 _soundFiles.Add(dest);
 

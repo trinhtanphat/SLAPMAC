@@ -276,14 +276,23 @@ document.addEventListener('DOMContentLoaded', async () => {
   async function getState() {
     return new Promise(resolve => {
       chrome.runtime.sendMessage({ type: 'GET_STATE' }, response => {
-        resolve(response || {
+        const defaults = {
           enabled: true,
           sensitivity: 1.5,
           volume: 1.0,
           cooldown: 300,
           detectionMode: 'motion',
           slapCount: 0
-        });
+        };
+        const s = response || defaults;
+        // Validate all values are within safe bounds
+        s.sensitivity = Math.max(0.1, Math.min(5.0, Number(s.sensitivity) || defaults.sensitivity));
+        s.volume = Math.max(0.0, Math.min(1.0, Number(s.volume) || defaults.volume));
+        s.cooldown = Math.max(100, Math.min(5000, Number(s.cooldown) || defaults.cooldown));
+        s.slapCount = Math.max(0, Math.floor(Number(s.slapCount) || 0));
+        s.enabled = typeof s.enabled === 'boolean' ? s.enabled : defaults.enabled;
+        s.detectionMode = ['motion', 'microphone'].includes(s.detectionMode) ? s.detectionMode : defaults.detectionMode;
+        resolve(s);
       });
     });
   }

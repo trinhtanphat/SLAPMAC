@@ -104,7 +104,13 @@ final class SlapDetector {
         let result = IOServiceOpen(service, mach_task_self_, 0, &smsConnection)
         IOObjectRelease(service)
         
-        guard result == KERN_SUCCESS, smsConnection != 0 else { return false }
+        guard result == KERN_SUCCESS, smsConnection != 0 else {
+            if smsConnection != 0 {
+                IOServiceClose(smsConnection)
+                smsConnection = 0
+            }
+            return false
+        }
         
         var previousMagnitude: Double = 0
         

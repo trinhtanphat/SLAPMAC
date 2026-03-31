@@ -9,19 +9,34 @@ namespace SlapMac
     /// </summary>
     sealed class TrayApp : ApplicationContext
     {
-        private readonly NotifyIcon _trayIcon;
+        private NotifyIcon _trayIcon = null!;
         private readonly SlapDetector _detector;
         private readonly AudioManager _audio;
+        private readonly MainForm _mainForm;
         private int _slapCount;
         private bool _enabled = true;
-        private readonly ToolStripMenuItem _toggleItem;
-        private readonly ToolStripMenuItem _counterItem;
+        private ToolStripMenuItem _toggleItem = null!;
+        private ToolStripMenuItem _counterItem = null!;
 
         public TrayApp()
         {
             _audio = new AudioManager();
             _detector = new SlapDetector();
             _detector.SlapDetected += OnSlapDetected;
+
+            // Create main window
+            _mainForm = new MainForm(_audio, _detector);
+            _mainForm.ToggleStateChanged += (enabled) =>
+            {
+                _enabled = enabled;
+                _toggleItem.Checked = _enabled;
+                _toggleItem.Text = _enabled ? "Enabled" : "Disabled";
+                _audio.Enabled = _enabled;
+                if (_enabled) _detector.Start(); else _detector.Stop();
+                _trayIcon.Text = _enabled ? "SlapMac - Listening..." : "SlapMac - Paused";
+            };
+            _mainForm.SensitivityChanged += (val) => { _detector.Sensitivity = val; };
+            _mainForm.VolumeChanged += (val) => { _audio.Volume = val; };
 
             // Build context menu
             _toggleItem = new ToolStripMenuItem("Enabled", null, OnToggle)
@@ -46,6 +61,7 @@ namespace SlapMac
             var contextMenu = new ContextMenuStrip();
             contextMenu.Items.Add(new ToolStripMenuItem("🖐 SlapMac") { Enabled = false });
             contextMenu.Items.Add(new ToolStripSeparator());
+            contextMenu.Items.Add("Open SlapMac", null, (s, e) => ShowMainForm());
             contextMenu.Items.Add(_toggleItem);
             contextMenu.Items.Add(new ToolStripSeparator());
             contextMenu.Items.Add(_counterItem);
@@ -53,6 +69,7 @@ namespace SlapMac
             contextMenu.Items.Add(sensitivityMenu);
             contextMenu.Items.Add(volumeMenu);
             contextMenu.Items.Add(new ToolStripSeparator());
+            contextMenu.Items.Add("⚙️ Settings...", null, OnSettings);
             contextMenu.Items.Add("Add Custom Sound...", null, OnAddSound);
             contextMenu.Items.Add(new ToolStripSeparator());
             contextMenu.Items.Add("☕ Donate / Support", null, OnDonate);
@@ -68,11 +85,14 @@ namespace SlapMac
                 Visible = true
             };
 
-            _trayIcon.DoubleClick += (s, e) => OnToggle(s!, e);
+            _trayIcon.DoubleClick += (s, e) => ShowMainForm();
 
             _detector.Start();
 
-            // Show startup notification so user knows the app is running
+            // Show main window on startup
+            ShowMainForm();
+
+            // Show startup notification
             _trayIcon.ShowBalloonTip(
                 3000,
                 "SlapMac is running! \ud83d\udd90",
@@ -141,7 +161,7 @@ namespace SlapMac
             _slapCount++;
             _audio.PlayRandomSound();
 
-            // UI updates must be on the UI thread
+            // Update tray counter
             if (_counterItem.Owner?.InvokeRequired == true)
             {
                 _counterItem.Owner.BeginInvoke(new Action(() =>
@@ -151,6 +171,24 @@ namespace SlapMac
             {
                 _counterItem.Text = $"Slaps: {_slapCount}";
             }
+
+            // Update main window counter
+            _mainForm.OnSlapDetected();
+        }
+
+        private void ShowMainForm()
+        {
+            _mainForm.Show();
+            _mainForm.WindowState = FormWindowState.Normal;
+            _mainForm.Activate();
+        }
+
+        private void OnSettings(object? sender, EventArgs e)
+        {
+            var form = new SettingsForm(_detector, _audio);
+            form.TopMost = true;
+            form.Show();
+            form.Activate();
         }
 
         private void OnToggle(object? sender, EventArgs e)
@@ -218,6 +256,7 @@ namespace SlapMac
         {
             _detector.Dispose();
             _audio.Dispose();
+            _mainForm.Dispose();
             _trayIcon.Visible = false;
             _trayIcon.Dispose();
             Application.Exit();
@@ -229,6 +268,7 @@ namespace SlapMac
             {
                 _detector.Dispose();
                 _audio.Dispose();
+                _mainForm.Dispose();
                 _trayIcon.Visible = false;
                 _trayIcon.Dispose();
             }

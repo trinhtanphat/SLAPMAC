@@ -131,9 +131,12 @@ namespace SlapMac
                 var path = Path.Combine(AppContext.BaseDirectory, "Resources", $"{name}.{ext}");
                 if (File.Exists(path))
                 {
-                    // Load without locking the file
-                    using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
-                    return Image.FromStream(stream);
+                    // Load into MemoryStream so FileStream can be disposed safely
+                    using var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+                    var ms = new MemoryStream();
+                    fs.CopyTo(ms);
+                    ms.Seek(0, SeekOrigin.Begin);
+                    return Image.FromStream(ms);
                 }
             }
             return null;

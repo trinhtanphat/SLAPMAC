@@ -88,13 +88,12 @@ final class AudioManager {
     
     func addCustomSoundFromURL(_ url: URL) -> Bool {
         do {
-            // Sanitize filename - strip path traversal characters
-            let rawName = url.lastPathComponent
-            let sanitized = rawName
+            // Use lastPathComponent for safe filename (strips directory components)
+            let sanitized = url.lastPathComponent
                 .replacingOccurrences(of: "..", with: "")
                 .replacingOccurrences(of: "/", with: "_")
                 .replacingOccurrences(of: "\\", with: "_")
-            guard !sanitized.isEmpty else {
+            guard !sanitized.isEmpty, !sanitized.hasPrefix(".") else {
                 NSLog("[SlapMac] Invalid filename")
                 return false
             }
@@ -113,6 +112,12 @@ final class AudioManager {
             try FileManager.default.createDirectory(at: slapMacDir, withIntermediateDirectories: true)
             
             let destURL = slapMacDir.appendingPathComponent(sanitized)
+            
+            // Verify destination is still inside slapMacDir (prevent traversal)
+            guard destURL.path.hasPrefix(slapMacDir.path) else {
+                NSLog("[SlapMac] Path traversal detected")
+                return false
+            }
             
             if FileManager.default.fileExists(atPath: destURL.path) {
                 try FileManager.default.removeItem(at: destURL)
