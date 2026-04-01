@@ -11,6 +11,11 @@ struct PreferencesView: View {
             Text("SlapMac Preferences")
                 .font(.title)
                 .fontWeight(.bold)
+
+            Text("⚠ 18+ warning: adult-oriented sound content")
+                .font(.caption)
+                .fontWeight(.semibold)
+                .foregroundColor(.orange)
             
             Divider()
             

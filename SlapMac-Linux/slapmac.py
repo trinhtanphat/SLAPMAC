@@ -52,6 +52,8 @@ class SlapMacApp:
                  fg=accent, bg=bg).pack(pady=(30, 0))
         tk.Label(self.root, text="Slap your laptop, hear funny sounds!",
                  font=("Arial", 11), fg=gray, bg=bg).pack(pady=(4, 0))
+        tk.Label(self.root, text="⚠ 18+ warning: adult-oriented sound content",
+             font=("Arial", 9, "bold"), fg="#FFB74D", bg=bg).pack(pady=(4, 0))
 
         # Counter
         self.counter_label = tk.Label(self.root, text="0",

@@ -30,6 +30,15 @@
             android:textColor="#FFAAAAAA"
             android:layout_marginTop="8dp" />
 
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="⚠ 18+ warning: adult-oriented sound content"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:textColor="#FFFFB74D"
+            android:layout_marginTop="6dp" />
+
         <!-- Counter -->
         <TextView
             android:id="@+id/slapCounter"

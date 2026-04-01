@@ -84,7 +84,18 @@ namespace SlapMac
                 Location = new Point(88, y),
             };
             mainPanel.Controls.Add(subtitle);
-            y += 35;
+            y += 28;
+
+            var warning = new Label
+            {
+                Text = "⚠ 18+ adult-oriented sound content",
+                Font = new Font("Segoe UI", 9, FontStyle.Bold),
+                ForeColor = Color.FromArgb(255, 184, 77),
+                AutoSize = true,
+                Location = new Point(88, y),
+            };
+            mainPanel.Controls.Add(warning);
+            y += 30;
 
             // ── Divider ──
             mainPanel.Controls.Add(CreateDivider(y, 350));

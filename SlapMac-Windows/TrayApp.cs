@@ -243,6 +243,7 @@ namespace SlapMac
         {
             MessageBox.Show(
                 "SlapMac v1.0.0\n\n" +
+                "⚠ 18+ warning: adult-oriented sound content\n\n" +
                 "Slap your laptop, hear funny sounds! 🖐💻\n\n" +
                 "Detects physical taps via microphone and plays\n" +
                 "amusing sound effects.\n\n" +
@@ -314,7 +315,8 @@ namespace SlapMac
 
             var desc = new Label
             {
-                Text = "Slap your laptop, hear funny sounds!\n\n" +
+                  Text = "⚠ 18+ warning: adult-oriented sound content\n\n" +
+                      "Slap your laptop, hear funny sounds!\n\n" +
                        "✅  App is running in the system tray (bottom-right)\n" +
                        "✅  Tap or slap your laptop to trigger sounds\n" +
                        "✅  Right-click the tray icon for settings\n\n" +

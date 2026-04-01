@@ -42,6 +42,10 @@ struct ContentView: View {
                     .font(.subheadline)
                     .foregroundColor(.gray)
 
+                Text("⚠ 18+ warning: adult-oriented sound content")
+                    .font(.caption)
+                    .foregroundColor(.orange)
+
                 Spacer()
 
                 Text("\(slapCount)")

@@ -4,6 +4,8 @@
 
 SlapMac detects physical taps and slaps on your laptop/phone and plays amusing sound effects. Available as a **macOS app**, **Windows app**, **iOS app**, **Android app**, **Linux app**, and **Chrome browser extension**.
 
+> ⚠️ 18+ Warning: This app includes adult-oriented sound content. Use responsibly.
+
 [![Build & Release](../../actions/workflows/release.yml/badge.svg)](../../actions/workflows/release.yml)
 
 ---
