@@ -418,8 +418,18 @@ document.addEventListener('DOMContentLoaded', async () => {
       };
 
       statusLabel.textContent = t('micListening');
-    }).catch(() => {
-      statusLabel.textContent = t('micDenied');
+    }).catch(async (err) => {
+      // Keep state consistent when mic access is blocked.
+      state.enabled = false;
+      toggleEnabled.checked = false;
+      await saveState(state);
+      statusText.textContent = t('disabled');
+
+      const deniedHint = 'Allow microphone in browser settings, then re-enable SlapMac.';
+      const isPermissionError = err && (err.name === 'NotAllowedError' || err.name === 'SecurityError');
+      statusLabel.textContent = isPermissionError
+        ? `${t('micDenied')} ${deniedHint}`
+        : `${t('micDenied')} (${err && err.name ? err.name : 'UnknownError'})`;
       statusIndicator.className = 'status-indicator disabled';
     });
   }
