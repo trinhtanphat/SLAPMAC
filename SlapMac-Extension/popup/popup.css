@@ -50,6 +50,11 @@ body {
   border-color: #ffd166;
 }
 
+.language-select option {
+  background-color: #16213e;
+  color: #f5f7fa;
+}
+
 .logo {
   font-size: 48px;
   margin-bottom: 4px;
@@ -242,6 +247,11 @@ input:checked + .slider::before {
 
 .control-group select:focus {
   border-color: #e94560;
+}
+
+.control-group select option {
+  background-color: #16213e;
+  color: #f5f7fa;
 }
 
 /* Range sliders */
