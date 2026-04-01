@@ -242,12 +242,35 @@ private extension PreferencesView {
             "cooldown": "Do tre (giay giua cac lan phat)", "launchAtLogin": "Khoi dong cung he thong", "version": "Phien ban",
             "checkUpdate": "Kiem tra cap nhat", "updateNow": "Cap nhat ngay", "reset": "Dat lai mac dinh", "checking": "Dang kiem tra GitHub tags..."
         ]
+        let shared: [String: [String: String]] = [
+            "es": ["language": "Idioma", "checkUpdate": "Buscar actualizacion", "updateNow": "Actualizar ahora"],
+            "fr": ["language": "Langue", "checkUpdate": "Verifier la mise a jour", "updateNow": "Mettre a jour"],
+            "de": ["language": "Sprache", "checkUpdate": "Update pruefen", "updateNow": "Jetzt updaten"],
+            "it": ["language": "Lingua", "checkUpdate": "Controlla aggiornamento", "updateNow": "Aggiorna ora"],
+            "pt": ["language": "Idioma", "checkUpdate": "Verificar atualizacao", "updateNow": "Atualizar agora"],
+            "ru": ["language": "Yazyk", "checkUpdate": "Proverit obnovlenie", "updateNow": "Obnovit"],
+            "ja": ["language": "Gengo", "checkUpdate": "Koshin chekku", "updateNow": "Ima sugu koshin"],
+            "ko": ["language": "Eoneo", "checkUpdate": "Eobdeiteu hwagin", "updateNow": "Jigeum eobdeiteu"],
+            "zh-CN": ["language": "Yu yan", "checkUpdate": "Jian cha geng xin", "updateNow": "Li ji geng xin"],
+            "zh-TW": ["language": "Yu yan", "checkUpdate": "Jian cha geng xin", "updateNow": "Li ji geng xin"],
+            "th": ["language": "Phasa", "checkUpdate": "Truat sop update", "updateNow": "Update ton ni"],
+            "id": ["language": "Bahasa", "checkUpdate": "Cek pembaruan", "updateNow": "Perbarui sekarang"],
+            "ms": ["language": "Bahasa", "checkUpdate": "Semak kemas kini", "updateNow": "Kemas kini sekarang"],
+            "hi": ["language": "Bhasha", "checkUpdate": "Update check karo", "updateNow": "Abhi update karo"],
+            "ar": ["language": "Lugha", "checkUpdate": "Tahqiq min altahdith", "updateNow": "Haddith alan"],
+            "tr": ["language": "Dil", "checkUpdate": "Guncellemeyi kontrol et", "updateNow": "Simdi guncelle"],
+            "pl": ["language": "Jezyk", "checkUpdate": "Sprawdz aktualizacje", "updateNow": "Aktualizuj teraz"],
+            "nl": ["language": "Taal", "checkUpdate": "Controleer update", "updateNow": "Nu updaten"]
+        ]
         let en: [String: String] = [
             "preferences": "Preferences", "language": "Language", "detectionSensitivity": "Detection Sensitivity", "volume": "Volume",
             "cooldown": "Cooldown (seconds between sounds)", "launchAtLogin": "Launch at Login", "version": "Version",
             "checkUpdate": "Check Update", "updateNow": "Update Now", "reset": "Reset to Defaults", "checking": "Checking GitHub tags..."
         ]
-        return (languageCode == "vi" ? vi[key] : nil) ?? en[key] ?? key
+        return (languageCode == "vi" ? vi[key] : nil)
+            ?? shared[languageCode]?[key]
+            ?? en[key]
+            ?? key
     }
 }
 

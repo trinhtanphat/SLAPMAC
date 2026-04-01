@@ -58,9 +58,34 @@ class MainActivity : AppCompatActivity() {
         LanguageOption("pl", "🇵🇱 Polski"), LanguageOption("nl", "🇳🇱 Nederlands")
     )
 
+    private val baseI18n = mapOf(
+        "pause" to "⏸ Pause", "resume" to "▶ Resume", "test" to "🔊 Test Sound", "sounds" to "%d sound(s) loaded",
+        "sens" to "Sensitivity: %.1f", "vol" to "Volume: %d%%", "cool" to "Cooldown: %dms", "version" to "Version: v%s",
+        "check" to "Check Update", "update" to "Update Now", "checking" to "Checking GitHub tags...", "new" to "New version available: %s",
+        "uptodate" to "Up to date (%s).", "uptodateYou" to "You're up to date (%s).", "failed" to "Update check failed. Try again later.", "notags" to "No release tags found."
+    )
+
     private val i18n = mapOf(
-        "en" to mapOf("pause" to "⏸ Pause", "resume" to "▶ Resume", "test" to "🔊 Test Sound", "sounds" to "%d sound(s) loaded", "sens" to "Sensitivity: %.1f", "vol" to "Volume: %d%%", "cool" to "Cooldown: %dms", "version" to "Version: v%s", "check" to "Check Update", "update" to "Update Now", "checking" to "Checking GitHub tags...", "new" to "New version available: %s", "uptodate" to "Up to date (%s).", "uptodateYou" to "You're up to date (%s).", "failed" to "Update check failed. Try again later.", "notags" to "No release tags found."),
-        "vi" to mapOf("pause" to "⏸ Tam dung", "resume" to "▶ Tiep tuc", "test" to "🔊 Thu am thanh", "sounds" to "%d am thanh da tai", "sens" to "Do nhay: %.1f", "vol" to "Am luong: %d%%", "cool" to "Do tre: %dms", "version" to "Phien ban: v%s", "check" to "Kiem tra cap nhat", "update" to "Cap nhat ngay", "checking" to "Dang kiem tra GitHub tags...", "new" to "Co ban moi: %s", "uptodate" to "Da moi nhat (%s).", "uptodateYou" to "Ban dang o ban moi nhat (%s).", "failed" to "Kiem tra cap nhat that bai.", "notags" to "Khong tim thay tag release.")
+        "en" to baseI18n,
+        "vi" to (baseI18n + mapOf("pause" to "⏸ Tam dung", "resume" to "▶ Tiep tuc", "test" to "🔊 Thu am thanh", "sounds" to "%d am thanh da tai", "sens" to "Do nhay: %.1f", "vol" to "Am luong: %d%%", "cool" to "Do tre: %dms", "version" to "Phien ban: v%s", "check" to "Kiem tra cap nhat", "update" to "Cap nhat ngay", "checking" to "Dang kiem tra GitHub tags...", "new" to "Co ban moi: %s", "uptodate" to "Da moi nhat (%s).", "uptodateYou" to "Ban dang o ban moi nhat (%s).", "failed" to "Kiem tra cap nhat that bai.", "notags" to "Khong tim thay tag release.")),
+        "es" to (baseI18n + mapOf("check" to "Buscar actualizacion", "update" to "Actualizar ahora")),
+        "fr" to (baseI18n + mapOf("check" to "Verifier la mise a jour", "update" to "Mettre a jour")),
+        "de" to (baseI18n + mapOf("check" to "Update pruefen", "update" to "Jetzt updaten")),
+        "it" to (baseI18n + mapOf("check" to "Controlla aggiornamento", "update" to "Aggiorna ora")),
+        "pt" to (baseI18n + mapOf("check" to "Verificar atualizacao", "update" to "Atualizar agora")),
+        "ru" to (baseI18n + mapOf("check" to "Proverit obnovlenie", "update" to "Obnovit")),
+        "ja" to (baseI18n + mapOf("check" to "Koshin chekku", "update" to "Ima sugu koshin")),
+        "ko" to (baseI18n + mapOf("check" to "Eobdeiteu hwagin", "update" to "Jigeum eobdeiteu")),
+        "zh-CN" to (baseI18n + mapOf("check" to "Jian cha geng xin", "update" to "Li ji geng xin")),
+        "zh-TW" to (baseI18n + mapOf("check" to "Jian cha geng xin", "update" to "Li ji geng xin")),
+        "th" to (baseI18n + mapOf("check" to "Truat sop update", "update" to "Update ton ni")),
+        "id" to (baseI18n + mapOf("check" to "Cek pembaruan", "update" to "Perbarui sekarang")),
+        "ms" to (baseI18n + mapOf("check" to "Semak kemas kini", "update" to "Kemas kini sekarang")),
+        "hi" to (baseI18n + mapOf("check" to "Update check karo", "update" to "Abhi update karo")),
+        "ar" to (baseI18n + mapOf("check" to "Tahqiq min altahdith", "update" to "Haddith alan")),
+        "tr" to (baseI18n + mapOf("check" to "Guncellemeyi kontrol et", "update" to "Simdi guncelle")),
+        "pl" to (baseI18n + mapOf("check" to "Sprawdz aktualizacje", "update" to "Aktualizuj teraz")),
+        "nl" to (baseI18n + mapOf("check" to "Controleer update", "update" to "Nu updaten"))
     )
 
     override fun onCreate(savedInstanceState: Bundle?) {

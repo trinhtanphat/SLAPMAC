@@ -240,13 +240,37 @@ class SlapMacApp:
             "checking": "Dang kiem tra GitHub tags...", "new": "Co ban moi: {0}", "upToDate": "Da moi nhat ({0}).",
             "upToDateYou": "Ban dang o ban moi nhat ({0}).", "updateFailed": "Kiem tra cap nhat that bai.", "noTags": "Khong tim thay release tag."
         }
+        shared = {
+            "es": {"language": "Idioma", "checkUpdate": "Buscar actualizacion", "updateNow": "Actualizar ahora"},
+            "fr": {"language": "Langue", "checkUpdate": "Verifier la mise a jour", "updateNow": "Mettre a jour"},
+            "de": {"language": "Sprache", "checkUpdate": "Update pruefen", "updateNow": "Jetzt updaten"},
+            "it": {"language": "Lingua", "checkUpdate": "Controlla aggiornamento", "updateNow": "Aggiorna ora"},
+            "pt": {"language": "Idioma", "checkUpdate": "Verificar atualizacao", "updateNow": "Atualizar agora"},
+            "ru": {"language": "Yazyk", "checkUpdate": "Proverit obnovlenie", "updateNow": "Obnovit"},
+            "ja": {"language": "Gengo", "checkUpdate": "Koshin chekku", "updateNow": "Ima sugu koshin"},
+            "ko": {"language": "Eoneo", "checkUpdate": "Eobdeiteu hwagin", "updateNow": "Jigeum eobdeiteu"},
+            "zh-CN": {"language": "Yu yan", "checkUpdate": "Jian cha geng xin", "updateNow": "Li ji geng xin"},
+            "zh-TW": {"language": "Yu yan", "checkUpdate": "Jian cha geng xin", "updateNow": "Li ji geng xin"},
+            "th": {"language": "Phasa", "checkUpdate": "Truat sop update", "updateNow": "Update ton ni"},
+            "id": {"language": "Bahasa", "checkUpdate": "Cek pembaruan", "updateNow": "Perbarui sekarang"},
+            "ms": {"language": "Bahasa", "checkUpdate": "Semak kemas kini", "updateNow": "Kemas kini sekarang"},
+            "hi": {"language": "Bhasha", "checkUpdate": "Update check karo", "updateNow": "Abhi update karo"},
+            "ar": {"language": "Lugha", "checkUpdate": "Tahqiq min altahdith", "updateNow": "Haddith alan"},
+            "tr": {"language": "Dil", "checkUpdate": "Guncellemeyi kontrol et", "updateNow": "Simdi guncelle"},
+            "pl": {"language": "Jezyk", "checkUpdate": "Sprawdz aktualizacje", "updateNow": "Aktualizuj teraz"},
+            "nl": {"language": "Taal", "checkUpdate": "Controleer update", "updateNow": "Nu updaten"}
+        }
         en = {
             "language": "Language", "pause": "⏸ Pause", "resume": "▶ Resume", "testSound": "🔊 Test Sound",
             "soundsLoaded": "{0} sound(s) loaded", "checkUpdate": "Check Update", "updateNow": "Update Now",
             "checking": "Checking GitHub tags...", "new": "New version available: {0}", "upToDate": "Up to date ({0}).",
             "upToDateYou": "You're up to date ({0}).", "updateFailed": "Update check failed. Try again later.", "noTags": "No release tags found."
         }
-        return (vi if self.language_code == "vi" else en).get(key, en.get(key, key))
+        if self.language_code == "vi":
+            return vi.get(key, en.get(key, key))
+        if self.language_code in shared:
+            return shared[self.language_code].get(key, en.get(key, key))
+        return en.get(key, key)
 
     def _on_slap(self):
         if not self.is_enabled:

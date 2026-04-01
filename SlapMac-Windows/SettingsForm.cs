@@ -307,14 +307,70 @@ namespace SlapMac
 
         private void ApplyLocalizedLabels()
         {
-            Text = _language == "vi" ? "Cai dat SlapMac ⚙️" : "SlapMac Settings ⚙️";
-            _checkUpdateBtn.Text = _language == "vi" ? "Kiem tra cap nhat" : "Check Update";
-            _updateNowBtn.Text = _language == "vi" ? "Cap nhat ngay" : "Update Now";
+            Text = L("title");
+            _checkUpdateBtn.Text = L("check");
+            _updateNowBtn.Text = L("update");
+        }
+
+        private string L(string key)
+        {
+            static Dictionary<string, string> En() => new()
+            {
+                ["title"] = "SlapMac Settings ⚙️",
+                ["check"] = "Check Update",
+                ["update"] = "Update Now",
+                ["checking"] = "Checking GitHub tags...",
+                ["noTags"] = "No release tags found.",
+                ["new"] = "New version available: {0}",
+                ["upToDate"] = "Up to date ({0}).",
+                ["upToDateYou"] = "You're up to date ({0}).",
+                ["failed"] = "Update check failed. Try again later.",
+            };
+
+            var en = En();
+            var vi = new Dictionary<string, string>(en)
+            {
+                ["title"] = "Cai dat SlapMac ⚙️",
+                ["check"] = "Kiem tra cap nhat",
+                ["update"] = "Cap nhat ngay",
+                ["checking"] = "Dang kiem tra GitHub tags...",
+                ["noTags"] = "Khong tim thay release tag.",
+                ["new"] = "Co ban moi: {0}",
+                ["upToDate"] = "Da moi nhat ({0}).",
+                ["upToDateYou"] = "Ban dang o ban moi nhat ({0}).",
+                ["failed"] = "Kiem tra cap nhat that bai. Thu lai sau.",
+            };
+
+            var shared = new Dictionary<string, Dictionary<string, string>>
+            {
+                ["es"] = new() { ["check"] = "Buscar actualizacion", ["update"] = "Actualizar ahora" },
+                ["fr"] = new() { ["check"] = "Verifier la mise a jour", ["update"] = "Mettre a jour" },
+                ["de"] = new() { ["check"] = "Update pruefen", ["update"] = "Jetzt updaten" },
+                ["it"] = new() { ["check"] = "Controlla aggiornamento", ["update"] = "Aggiorna ora" },
+                ["pt"] = new() { ["check"] = "Verificar atualizacao", ["update"] = "Atualizar agora" },
+                ["ru"] = new() { ["check"] = "Proverit obnovlenie", ["update"] = "Obnovit" },
+                ["ja"] = new() { ["check"] = "Koshin chekku", ["update"] = "Ima sugu koshin" },
+                ["ko"] = new() { ["check"] = "Eobdeiteu hwagin", ["update"] = "Jigeum eobdeiteu" },
+                ["zh-CN"] = new() { ["check"] = "Jian cha geng xin", ["update"] = "Li ji geng xin" },
+                ["zh-TW"] = new() { ["check"] = "Jian cha geng xin", ["update"] = "Li ji geng xin" },
+                ["th"] = new() { ["check"] = "Truat sop update", ["update"] = "Update ton ni" },
+                ["id"] = new() { ["check"] = "Cek pembaruan", ["update"] = "Perbarui sekarang" },
+                ["ms"] = new() { ["check"] = "Semak kemas kini", ["update"] = "Kemas kini sekarang" },
+                ["hi"] = new() { ["check"] = "Update check karo", ["update"] = "Abhi update karo" },
+                ["ar"] = new() { ["check"] = "Tahqiq min altahdith", ["update"] = "Haddith alan" },
+                ["tr"] = new() { ["check"] = "Guncellemeyi kontrol et", ["update"] = "Simdi guncelle" },
+                ["pl"] = new() { ["check"] = "Sprawdz aktualizacje", ["update"] = "Aktualizuj teraz" },
+                ["nl"] = new() { ["check"] = "Controleer update", ["update"] = "Nu updaten" },
+            };
+
+            if (_language == "vi" && vi.TryGetValue(key, out var viVal)) return viVal;
+            if (shared.TryGetValue(_language, out var map) && map.TryGetValue(key, out var mapVal)) return mapVal;
+            return en.TryGetValue(key, out var val) ? val : key;
         }
 
         private async System.Threading.Tasks.Task CheckForUpdatesAsync(bool manual)
         {
-            _updateStatusLabel.Text = _language == "vi" ? "Dang kiem tra GitHub tags..." : "Checking GitHub tags...";
+            _updateStatusLabel.Text = L("checking");
             _updateNowBtn.Enabled = false;
             _checkUpdateBtn.Enabled = false;
 
@@ -340,7 +396,7 @@ namespace SlapMac
 
                 if (string.IsNullOrWhiteSpace(latestTag))
                 {
-                    _updateStatusLabel.Text = _language == "vi" ? "Khong tim thay release tag." : "No release tags found.";
+                    _updateStatusLabel.Text = L("noTags");
                     return;
                 }
 
@@ -348,19 +404,19 @@ namespace SlapMac
                 var cmp = CompareVersions(latestVersion, _currentVersion);
                 if (cmp > 0)
                 {
-                    _updateStatusLabel.Text = _language == "vi" ? $"Co ban moi: {latestTag}" : $"New version available: {latestTag}";
+                    _updateStatusLabel.Text = string.Format(L("new"), latestTag);
                     _updateNowBtn.Enabled = true;
                 }
                 else
                 {
                     _updateStatusLabel.Text = manual
-                        ? (_language == "vi" ? $"Ban dang o ban moi nhat ({latestTag})." : $"You're up to date ({latestTag}).")
-                        : (_language == "vi" ? $"Da moi nhat ({latestTag})." : $"Up to date ({latestTag}).");
+                        ? string.Format(L("upToDateYou"), latestTag)
+                        : string.Format(L("upToDate"), latestTag);
                 }
             }
             catch
             {
-                _updateStatusLabel.Text = _language == "vi" ? "Kiem tra cap nhat that bai. Thu lai sau." : "Update check failed. Try again later.";
+                _updateStatusLabel.Text = L("failed");
             }
             finally
             {

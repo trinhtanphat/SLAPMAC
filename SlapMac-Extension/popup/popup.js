@@ -25,32 +25,39 @@ document.addEventListener('DOMContentLoaded', async () => {
     { code: 'nl', label: 'Nederlands', flag: 'NL' }
   ];
 
+  const EN = {
+    subtitleMain: 'Tap your laptop, hear sounds!', subtitleWarning: '⚠ 18+ content warning', language: 'Language',
+    enabled: 'Enabled', disabled: 'Disabled', listening: 'Listening for taps...', paused: 'Detection paused',
+    totalSlaps: 'Total Slaps', detectionMode: 'Detection Mode', micMode: 'Microphone (Desktop)', motionMode: 'Motion Sensor (Mobile)',
+    sensitivity: 'Sensitivity', volume: 'Volume', cooldown: 'Cooldown', testSound: '🔊 Test Sound',
+    currentVersion: 'Current Version', checkingRelease: 'Checking latest release...', checkUpdate: 'Check Update', updateNow: 'Update Now',
+    donate: '☕ Support / Donate', keepOpen: '⚠ Keep popup open for detection to work',
+    checkingTags: 'Checking GitHub tags...', noTags: 'No release tags found.', newVersion: 'New version available: {tag}',
+    upToDate: 'Up to date ({tag}).', upToDateYou: "You're up to date ({tag}).", updateFailed: 'Update check failed. Try again later.',
+    motionDenied: 'Motion permission denied', motionUnavailable: 'Motion not available, try Microphone mode', micListening: '🎤 Listening via microphone...', micDenied: 'Microphone permission denied'
+  };
+
   const I18N = {
-    en: {
-      subtitleMain: 'Tap your laptop, hear sounds!', subtitleWarning: '⚠ 18+ content warning', language: 'Language',
-      enabled: 'Enabled', disabled: 'Disabled', listening: 'Listening for taps...', paused: 'Detection paused',
-      totalSlaps: 'Total Slaps', detectionMode: 'Detection Mode', micMode: 'Microphone (Desktop)', motionMode: 'Motion Sensor (Mobile)',
-      sensitivity: 'Sensitivity', volume: 'Volume', cooldown: 'Cooldown', testSound: '🔊 Test Sound',
-      currentVersion: 'Current Version', checkingRelease: 'Checking latest release...', checkUpdate: 'Check Update', updateNow: 'Update Now',
-      donate: '☕ Support / Donate', keepOpen: '⚠ Keep popup open for detection to work',
-      checkingTags: 'Checking GitHub tags...', noTags: 'No release tags found.', newVersion: 'New version available: {tag}',
-      upToDate: 'Up to date ({tag}).', upToDateYou: "You're up to date ({tag}).", updateFailed: 'Update check failed. Try again later.',
-      motionDenied: 'Motion permission denied', motionUnavailable: 'Motion not available, try Microphone mode', micListening: '🎤 Listening via microphone...', micDenied: 'Microphone permission denied'
-    },
-    vi: {
-      subtitleMain: 'Vo vao laptop de phat am thanh!', subtitleWarning: '⚠ Canh bao noi dung 18+', language: 'Ngon ngu',
-      enabled: 'Bat', disabled: 'Tat', listening: 'Dang lang nghe tieng vo...', paused: 'Tam dung phat hien',
-      totalSlaps: 'Tong so lan vo', detectionMode: 'Che do phat hien', micMode: 'Micro (May tinh)', motionMode: 'Cam bien chuyen dong (Di dong)',
-      sensitivity: 'Do nhay', volume: 'Am luong', cooldown: 'Do tre', testSound: '🔊 Thu am thanh',
-      currentVersion: 'Phien ban hien tai', checkingRelease: 'Dang kiem tra ban moi...', checkUpdate: 'Kiem tra cap nhat', updateNow: 'Cap nhat ngay',
-      donate: '☕ Ung ho / Donate', keepOpen: '⚠ Hay giu popup mo de tinh nang hoat dong',
-      checkingTags: 'Dang kiem tra GitHub tags...', noTags: 'Khong tim thay release tag.', newVersion: 'Co ban moi: {tag}',
-      upToDate: 'Da moi nhat ({tag}).', upToDateYou: 'Ban dang o ban moi nhat ({tag}).', updateFailed: 'Kiem tra cap nhat that bai. Thu lai sau.',
-      motionDenied: 'Tu choi quyen cam bien chuyen dong', motionUnavailable: 'Khong co motion, thu che do Microphone', micListening: '🎤 Dang lang nghe bang microphone...', micDenied: 'Tu choi quyen microphone'
-    },
-    es: { language: 'Idioma', checkUpdate: 'Buscar actualizacion', updateNow: 'Actualizar', totalSlaps: 'Golpes totales', keepOpen: '⚠ Mantenga el popup abierto para detectar', subtitleMain: 'Golpea tu laptop y escucha sonidos!' },
-    fr: { language: 'Langue', checkUpdate: 'Verifier la mise a jour', updateNow: 'Mettre a jour', totalSlaps: 'Total des claques', keepOpen: '⚠ Gardez la fenetre ouverte pour detecter', subtitleMain: 'Tapez votre laptop pour des sons!' },
-    de: { language: 'Sprache', checkUpdate: 'Update prüfen', updateNow: 'Jetzt updaten', totalSlaps: 'Gesamt Schlaege', keepOpen: '⚠ Popup offen lassen damit Erkennung laeuft', subtitleMain: 'Klopf auf dein Laptop fuer Sounds!' }
+    en: EN,
+    vi: { ...EN, subtitleMain: 'Vo vao laptop de phat am thanh!', subtitleWarning: '⚠ Canh bao noi dung 18+', language: 'Ngon ngu', enabled: 'Bat', disabled: 'Tat', listening: 'Dang lang nghe tieng vo...', paused: 'Tam dung phat hien', totalSlaps: 'Tong so lan vo', detectionMode: 'Che do phat hien', micMode: 'Micro (May tinh)', motionMode: 'Cam bien chuyen dong (Di dong)', sensitivity: 'Do nhay', volume: 'Am luong', cooldown: 'Do tre', testSound: '🔊 Thu am thanh', currentVersion: 'Phien ban hien tai', checkingRelease: 'Dang kiem tra ban moi...', checkUpdate: 'Kiem tra cap nhat', updateNow: 'Cap nhat ngay', donate: '☕ Ung ho / Donate', keepOpen: '⚠ Hay giu popup mo de tinh nang hoat dong', checkingTags: 'Dang kiem tra GitHub tags...', noTags: 'Khong tim thay release tag.', newVersion: 'Co ban moi: {tag}', upToDate: 'Da moi nhat ({tag}).', upToDateYou: 'Ban dang o ban moi nhat ({tag}).', updateFailed: 'Kiem tra cap nhat that bai. Thu lai sau.', motionDenied: 'Tu choi quyen cam bien chuyen dong', motionUnavailable: 'Khong co motion, thu che do Microphone', micListening: '🎤 Dang lang nghe bang microphone...', micDenied: 'Tu choi quyen microphone' },
+    es: { ...EN, language: 'Idioma', subtitleMain: 'Golpea tu laptop y escucha sonidos!', checkUpdate: 'Buscar actualizacion', updateNow: 'Actualizar', totalSlaps: 'Golpes totales', keepOpen: '⚠ Mantenga el popup abierto para detectar' },
+    fr: { ...EN, language: 'Langue', subtitleMain: 'Tapez votre laptop pour des sons!', checkUpdate: 'Verifier la mise a jour', updateNow: 'Mettre a jour', totalSlaps: 'Total des claques', keepOpen: '⚠ Gardez la fenetre ouverte pour detecter' },
+    de: { ...EN, language: 'Sprache', subtitleMain: 'Klopf auf dein Laptop fuer Sounds!', checkUpdate: 'Update pruefen', updateNow: 'Jetzt updaten', totalSlaps: 'Gesamt Schlaege' },
+    it: { ...EN, language: 'Lingua', subtitleMain: 'Batti il laptop e ascolta suoni!', checkUpdate: 'Controlla aggiornamento', updateNow: 'Aggiorna ora' },
+    pt: { ...EN, language: 'Idioma', subtitleMain: 'Bata no laptop e ouca sons!', checkUpdate: 'Verificar atualizacao', updateNow: 'Atualizar agora' },
+    ru: { ...EN, language: 'Yazyk', subtitleMain: 'Postuchi po noutbuku i slushai zvuki!', checkUpdate: 'Proverit obnovlenie', updateNow: 'Obnovit' },
+    ja: { ...EN, language: 'Gengo', subtitleMain: 'Laptop o tataite oto o narasu!', checkUpdate: 'Koshin chekku', updateNow: 'Ima sugu koshin' },
+    ko: { ...EN, language: 'Eoneo', subtitleMain: 'Nouteubugeul duaedeuryeo sori jaesaeng!', checkUpdate: 'Eobdeiteu hwagin', updateNow: 'Jigeum eobdeiteu' },
+    'zh-CN': { ...EN, language: 'Yu yan', subtitleMain: 'Pai yi xia bi ji ben jiu you sheng yin!', checkUpdate: 'Jian cha geng xin', updateNow: 'Li ji geng xin' },
+    'zh-TW': { ...EN, language: 'Yu yan', subtitleMain: 'Pai yi xia bi dian jiu you sheng yin!', checkUpdate: 'Jian cha geng xin', updateNow: 'Li ji geng xin' },
+    th: { ...EN, language: 'Phasa', subtitleMain: 'Tap laptop laeo mi siang!', checkUpdate: 'Truat sop update', updateNow: 'Update ton ni' },
+    id: { ...EN, language: 'Bahasa', subtitleMain: 'Ketuk laptopmu, dengar suaranya!', checkUpdate: 'Cek pembaruan', updateNow: 'Perbarui sekarang' },
+    ms: { ...EN, language: 'Bahasa', subtitleMain: 'Ketuk laptop, dengar bunyi!', checkUpdate: 'Semak kemas kini', updateNow: 'Kemas kini sekarang' },
+    hi: { ...EN, language: 'Bhasha', subtitleMain: 'Laptop par tap karo, awaz suno!', checkUpdate: 'Update check karo', updateNow: 'Abhi update karo' },
+    ar: { ...EN, language: 'Lugha', subtitleMain: 'Idrab allaptop wa istami lil sawt!', checkUpdate: 'Tahqiq min altahdith', updateNow: 'Haddith alan' },
+    tr: { ...EN, language: 'Dil', subtitleMain: 'Laptopa vur, sesi duy!', checkUpdate: 'Guncellemeyi kontrol et', updateNow: 'Simdi guncelle' },
+    pl: { ...EN, language: 'Jezyk', subtitleMain: 'Stuknij w laptop i uslysz dzwiek!', checkUpdate: 'Sprawdz aktualizacje', updateNow: 'Aktualizuj teraz' },
+    nl: { ...EN, language: 'Taal', subtitleMain: 'Tik op je laptop en hoor geluid!', checkUpdate: 'Controleer update', updateNow: 'Nu updaten' }
   };
 
   // DOM Elements
