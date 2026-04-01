@@ -85,6 +85,9 @@ jobs:
           print(f"✅ All versions match release tag {tag}")
           PY
 
+      - name: Validate i18n coverage
+        run: python3 scripts/validate-i18n.py
+
   # ============================================================
   # Job 1: Build macOS App
   # ============================================================

@@ -413,6 +413,12 @@ git push origin main
 git push origin v1.0.12
 ```
 
+### Localization Guard
+```bash
+# Validate extension localization (20 languages + key consistency)
+python scripts/validate-i18n.py
+```
+
 Release workflow is tag-driven only (`vX.Y.Z`) and will fail if any app version does not match the pushed tag.
 
 ### What the CI/CD Does
