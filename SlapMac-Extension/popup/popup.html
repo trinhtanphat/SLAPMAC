@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self'; media-src 'self'; style-src 'self'; script-src 'self';">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self'; media-src 'self'; style-src 'self'; script-src 'self'; connect-src 'self' https://api.github.com;">
   <title>SlapMac</title>
   <link rel="stylesheet" href="popup.css">
 </head>
@@ -13,8 +13,13 @@
     <div class="header">
       <div class="logo">🖐</div>
       <h1>SlapMac</h1>
-      <p class="subtitle">Tap your laptop, hear sounds!</p>
-      <p class="subtitle">⚠️ 18+ content warning</p>
+      <p class="subtitle" id="subtitle-main">Tap your laptop, hear sounds!</p>
+      <p class="subtitle" id="subtitle-warning">⚠️ 18+ content warning</p>
+    </div>
+
+    <div class="language-section">
+      <label class="language-label" for="language-select" id="language-label">Language</label>
+      <select id="language-select" class="language-select"></select>
     </div>
 
     <!-- Main Toggle -->
@@ -38,7 +43,7 @@
 
     <!-- Slap Counter -->
     <div class="counter-section">
-      <span class="counter-label">Total Slaps</span>
+      <span class="counter-label" id="counter-label">Total Slaps</span>
       <span class="counter-value" id="slap-count">0</span>
     </div>
 
@@ -46,41 +51,54 @@
     <div class="controls">
       <!-- Detection Mode -->
       <div class="control-group">
-        <label>Detection Mode</label>
+        <label id="label-detection-mode">Detection Mode</label>
         <select id="detection-mode">
-          <option value="microphone">Microphone (Desktop)</option>
-          <option value="motion">Motion Sensor (Mobile)</option>
+          <option value="microphone" id="option-microphone">Microphone (Desktop)</option>
+          <option value="motion" id="option-motion">Motion Sensor (Mobile)</option>
         </select>
       </div>
 
       <!-- Sensitivity -->
       <div class="control-group">
-        <label>Sensitivity <span id="sensitivity-value">1.5</span></label>
+        <label><span id="label-sensitivity">Sensitivity</span> <span id="sensitivity-value">1.5</span></label>
         <input type="range" id="sensitivity" min="0.5" max="5" step="0.1" value="1.5">
       </div>
 
       <!-- Volume -->
       <div class="control-group">
-        <label>Volume <span id="volume-value">100%</span></label>
+        <label><span id="label-volume">Volume</span> <span id="volume-value">100%</span></label>
         <input type="range" id="volume" min="0" max="1" step="0.05" value="1">
       </div>
 
       <!-- Cooldown -->
       <div class="control-group">
-        <label>Cooldown <span id="cooldown-value">1500ms</span></label>
+        <label><span id="label-cooldown">Cooldown</span> <span id="cooldown-value">1500ms</span></label>
         <input type="range" id="cooldown" min="500" max="5000" step="100" value="1500">
       </div>
     </div>
 
     <!-- Test Button -->
     <button class="test-btn" id="test-sound">
-      🔊 Test Sound
+      <span id="test-sound-text">🔊 Test Sound</span>
     </button>
+
+    <!-- Version Update -->
+    <div class="update-section">
+      <div class="update-row">
+        <span class="update-label" id="update-label">Current Version</span>
+        <span class="update-version" id="current-version">v-</span>
+      </div>
+      <p class="update-status" id="update-status">Checking latest release...</p>
+      <div class="update-actions">
+        <button class="update-check-btn" id="check-update">Check Update</button>
+        <button class="update-now-btn" id="update-now" disabled>Update Now</button>
+      </div>
+    </div>
 
     <!-- Donate Section -->
     <div class="donate-section">
       <button class="donate-btn" id="show-donate">
-        ☕ Support / Donate
+        <span id="donate-btn-text">☕ Support / Donate</span>
       </button>
     </div>
 
@@ -108,9 +126,9 @@
 
     <!-- Footer -->
     <div class="footer">
-      <span>⚠️ Keep popup open for detection to work</span>
+      <span id="footer-keep-open">⚠️ Keep popup open for detection to work</span>
       <br>
-      <span>v1.0.1 • Free & Open Source</span>
+      <span id="version-text">v-- • Free & Open Source</span>
     </div>
   </div>
 

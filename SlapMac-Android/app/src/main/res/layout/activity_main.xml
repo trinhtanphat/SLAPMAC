@@ -39,6 +39,14 @@
             android:textColor="#FFFFB74D"
             android:layout_marginTop="6dp" />
 
+        <Spinner
+            android:id="@+id/languageSpinner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:background="#2A2A3D"
+            android:padding="6dp" />
+
         <!-- Counter -->
         <TextView
             android:id="@+id/slapCounter"
@@ -168,6 +176,54 @@
             android:text="☕ Support / Donate"
             android:textSize="14sp"
             android:layout_marginTop="32dp" />
+
+        <!-- Update Section -->
+        <TextView
+            android:id="@+id/versionLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Version: v1.0.0"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textColor="#FFFFD166"
+            android:layout_marginTop="20dp" />
+
+        <TextView
+            android:id="@+id/updateStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Checking updates..."
+            android:textSize="12sp"
+            android:textColor="#FF9AA4B2"
+            android:gravity="center"
+            android:layout_marginTop="6dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginTop="10dp">
+
+            <Button
+                android:id="@+id/checkUpdateButton"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_weight="1"
+                android:text="Check Update"
+                android:textSize="13sp"
+                android:layout_marginEnd="6dp" />
+
+            <Button
+                android:id="@+id/updateNowButton"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_weight="1"
+                android:text="Update Now"
+                android:textSize="13sp"
+                android:enabled="false"
+                android:layout_marginStart="6dp" />
+        </LinearLayout>
 
         <View
             android:layout_width="match_parent"

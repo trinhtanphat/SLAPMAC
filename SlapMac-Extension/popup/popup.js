@@ -1,5 +1,58 @@
 // SlapMac Extension - Popup Controller
 document.addEventListener('DOMContentLoaded', async () => {
+  const GITHUB_REPO = 'trinhtanphat/SLAPMAC';
+  const RELEASES_URL = 'https://github.com/trinhtanphat/SLAPMAC/releases/latest';
+  const LANGUAGE_OPTIONS = [
+    { code: 'en', label: 'English', flag: 'US' },
+    { code: 'vi', label: 'Tieng Viet', flag: 'VN' },
+    { code: 'es', label: 'Espanol', flag: 'ES' },
+    { code: 'fr', label: 'Francais', flag: 'FR' },
+    { code: 'de', label: 'Deutsch', flag: 'DE' },
+    { code: 'it', label: 'Italiano', flag: 'IT' },
+    { code: 'pt', label: 'Portugues', flag: 'PT' },
+    { code: 'ru', label: 'Russkiy', flag: 'RU' },
+    { code: 'ja', label: 'Nihongo', flag: 'JP' },
+    { code: 'ko', label: 'Hangug-eo', flag: 'KR' },
+    { code: 'zh-CN', label: 'JianTi ZhongWen', flag: 'CN' },
+    { code: 'zh-TW', label: 'FanTi ZhongWen', flag: 'TW' },
+    { code: 'th', label: 'Thai', flag: 'TH' },
+    { code: 'id', label: 'Bahasa Indonesia', flag: 'ID' },
+    { code: 'ms', label: 'Bahasa Melayu', flag: 'MY' },
+    { code: 'hi', label: 'Hindi', flag: 'IN' },
+    { code: 'ar', label: 'Arabic', flag: 'SA' },
+    { code: 'tr', label: 'Turkce', flag: 'TR' },
+    { code: 'pl', label: 'Polski', flag: 'PL' },
+    { code: 'nl', label: 'Nederlands', flag: 'NL' }
+  ];
+
+  const I18N = {
+    en: {
+      subtitleMain: 'Tap your laptop, hear sounds!', subtitleWarning: '⚠ 18+ content warning', language: 'Language',
+      enabled: 'Enabled', disabled: 'Disabled', listening: 'Listening for taps...', paused: 'Detection paused',
+      totalSlaps: 'Total Slaps', detectionMode: 'Detection Mode', micMode: 'Microphone (Desktop)', motionMode: 'Motion Sensor (Mobile)',
+      sensitivity: 'Sensitivity', volume: 'Volume', cooldown: 'Cooldown', testSound: '🔊 Test Sound',
+      currentVersion: 'Current Version', checkingRelease: 'Checking latest release...', checkUpdate: 'Check Update', updateNow: 'Update Now',
+      donate: '☕ Support / Donate', keepOpen: '⚠ Keep popup open for detection to work',
+      checkingTags: 'Checking GitHub tags...', noTags: 'No release tags found.', newVersion: 'New version available: {tag}',
+      upToDate: 'Up to date ({tag}).', upToDateYou: "You're up to date ({tag}).", updateFailed: 'Update check failed. Try again later.',
+      motionDenied: 'Motion permission denied', motionUnavailable: 'Motion not available, try Microphone mode', micListening: '🎤 Listening via microphone...', micDenied: 'Microphone permission denied'
+    },
+    vi: {
+      subtitleMain: 'Vo vao laptop de phat am thanh!', subtitleWarning: '⚠ Canh bao noi dung 18+', language: 'Ngon ngu',
+      enabled: 'Bat', disabled: 'Tat', listening: 'Dang lang nghe tieng vo...', paused: 'Tam dung phat hien',
+      totalSlaps: 'Tong so lan vo', detectionMode: 'Che do phat hien', micMode: 'Micro (May tinh)', motionMode: 'Cam bien chuyen dong (Di dong)',
+      sensitivity: 'Do nhay', volume: 'Am luong', cooldown: 'Do tre', testSound: '🔊 Thu am thanh',
+      currentVersion: 'Phien ban hien tai', checkingRelease: 'Dang kiem tra ban moi...', checkUpdate: 'Kiem tra cap nhat', updateNow: 'Cap nhat ngay',
+      donate: '☕ Ung ho / Donate', keepOpen: '⚠ Hay giu popup mo de tinh nang hoat dong',
+      checkingTags: 'Dang kiem tra GitHub tags...', noTags: 'Khong tim thay release tag.', newVersion: 'Co ban moi: {tag}',
+      upToDate: 'Da moi nhat ({tag}).', upToDateYou: 'Ban dang o ban moi nhat ({tag}).', updateFailed: 'Kiem tra cap nhat that bai. Thu lai sau.',
+      motionDenied: 'Tu choi quyen cam bien chuyen dong', motionUnavailable: 'Khong co motion, thu che do Microphone', micListening: '🎤 Dang lang nghe bang microphone...', micDenied: 'Tu choi quyen microphone'
+    },
+    es: { language: 'Idioma', checkUpdate: 'Buscar actualizacion', updateNow: 'Actualizar', totalSlaps: 'Golpes totales', keepOpen: '⚠ Mantenga el popup abierto para detectar', subtitleMain: 'Golpea tu laptop y escucha sonidos!' },
+    fr: { language: 'Langue', checkUpdate: 'Verifier la mise a jour', updateNow: 'Mettre a jour', totalSlaps: 'Total des claques', keepOpen: '⚠ Gardez la fenetre ouverte pour detecter', subtitleMain: 'Tapez votre laptop pour des sons!' },
+    de: { language: 'Sprache', checkUpdate: 'Update prüfen', updateNow: 'Jetzt updaten', totalSlaps: 'Gesamt Schlaege', keepOpen: '⚠ Popup offen lassen damit Erkennung laeuft', subtitleMain: 'Klopf auf dein Laptop fuer Sounds!' }
+  };
+
   // DOM Elements
   const toggleEnabled = document.getElementById('toggle-enabled');
   const statusText = document.getElementById('status-text');
@@ -13,16 +66,26 @@ document.addEventListener('DOMContentLoaded', async () => {
   const volumeValue = document.getElementById('volume-value');
   const cooldownSlider = document.getElementById('cooldown');
   const cooldownValue = document.getElementById('cooldown-value');
+  const languageSelect = document.getElementById('language-select');
   const testSoundBtn = document.getElementById('test-sound');
+  const currentVersionEl = document.getElementById('current-version');
+  const versionTextEl = document.getElementById('version-text');
+  const updateStatusEl = document.getElementById('update-status');
+  const checkUpdateBtn = document.getElementById('check-update');
+  const updateNowBtn = document.getElementById('update-now');
   const showDonateBtn = document.getElementById('show-donate');
   const donateModal = document.getElementById('donate-modal');
   const closeDonateBtn = document.getElementById('close-donate');
+
+  let latestTag = null;
+  const currentVersion = chrome.runtime.getManifest().version;
 
   // State
   let state = await getState();
   let detector = null;
 
   // Initialize UI from state
+  buildLanguageOptions();
   updateUI(state);
 
   // Start detection if enabled
@@ -70,9 +133,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     await saveState(state);
   });
 
+  languageSelect.addEventListener('change', async () => {
+    state.language = languageSelect.value;
+    await saveState(state);
+    applyLanguage();
+  });
+
   testSoundBtn.addEventListener('click', () => {
     playSound(state.volume);
     animateSlap();
+  });
+
+  checkUpdateBtn.addEventListener('click', () => {
+    checkForUpdates(true);
+  });
+
+  updateNowBtn.addEventListener('click', () => {
+    chrome.tabs.create({ url: RELEASES_URL });
   });
 
   showDonateBtn.addEventListener('click', () => {
@@ -91,18 +168,75 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Functions
   function updateUI(s) {
+    if (!s.language) s.language = 'en';
     toggleEnabled.checked = s.enabled;
-    statusText.textContent = s.enabled ? 'Enabled' : 'Disabled';
+    statusText.textContent = s.enabled ? t('enabled') : t('disabled');
     statusIndicator.className = 'status-indicator ' + (s.enabled ? 'listening' : 'disabled');
-    statusLabel.textContent = s.enabled ? 'Listening for taps...' : 'Detection paused';
+    statusLabel.textContent = s.enabled ? t('listening') : t('paused');
     slapCountEl.textContent = s.slapCount || 0;
     detectionMode.value = s.detectionMode || 'motion';
+    languageSelect.value = s.language;
     sensitivitySlider.value = s.sensitivity;
     sensitivityValue.textContent = s.sensitivity.toFixed(1);
     volumeSlider.value = s.volume;
     volumeValue.textContent = Math.round(s.volume * 100) + '%';
     cooldownSlider.value = s.cooldown;
     cooldownValue.textContent = s.cooldown + 'ms';
+    applyLanguage();
+  }
+
+  function t(key) {
+    const dict = I18N[state.language] || I18N.en;
+    return dict[key] || I18N.en[key] || key;
+  }
+
+  function tf(key, vars) {
+    let text = t(key);
+    Object.entries(vars || {}).forEach(([k, v]) => {
+      text = text.replace(`{${k}}`, String(v));
+    });
+    return text;
+  }
+
+  function flagEmoji(countryCode) {
+    return countryCode.toUpperCase().replace(/./g, c => String.fromCodePoint(127397 + c.charCodeAt()));
+  }
+
+  function buildLanguageOptions() {
+    languageSelect.innerHTML = '';
+    for (const item of LANGUAGE_OPTIONS) {
+      const option = document.createElement('option');
+      option.value = item.code;
+      option.textContent = `${flagEmoji(item.flag)} ${item.label}`;
+      languageSelect.appendChild(option);
+    }
+  }
+
+  function applyLanguage() {
+    document.getElementById('subtitle-main').textContent = t('subtitleMain');
+    document.getElementById('subtitle-warning').textContent = t('subtitleWarning');
+    document.getElementById('language-label').textContent = t('language');
+    document.getElementById('counter-label').textContent = t('totalSlaps');
+    document.getElementById('label-detection-mode').textContent = t('detectionMode');
+    document.getElementById('option-microphone').textContent = t('micMode');
+    document.getElementById('option-motion').textContent = t('motionMode');
+    document.getElementById('label-sensitivity').textContent = t('sensitivity');
+    document.getElementById('label-volume').textContent = t('volume');
+    document.getElementById('label-cooldown').textContent = t('cooldown');
+    document.getElementById('test-sound-text').textContent = t('testSound');
+    document.getElementById('update-label').textContent = t('currentVersion');
+    document.getElementById('check-update').textContent = t('checkUpdate');
+    document.getElementById('update-now').textContent = t('updateNow');
+    document.getElementById('donate-btn-text').textContent = t('donate');
+    document.getElementById('footer-keep-open').textContent = t('keepOpen');
+
+    statusText.textContent = state.enabled ? t('enabled') : t('disabled');
+    if (statusIndicator.classList.contains('disabled')) {
+      statusLabel.textContent = t('paused');
+    }
+
+    currentVersionEl.textContent = 'v' + currentVersion;
+    versionTextEl.textContent = 'v' + currentVersion + ' • Free & Open Source';
   }
 
   function animateSlap() {
@@ -145,13 +279,13 @@ document.addEventListener('DOMContentLoaded', async () => {
           setupMotionListener(s);
         }
       }).catch(() => {
-        statusLabel.textContent = 'Motion permission denied';
+        statusLabel.textContent = t('motionDenied');
         statusIndicator.className = 'status-indicator disabled';
       });
     } else if (typeof DeviceMotionEvent !== 'undefined') {
       setupMotionListener(s);
     } else {
-      statusLabel.textContent = 'Motion not available, try Microphone mode';
+      statusLabel.textContent = t('motionUnavailable');
       statusIndicator.className = 'status-indicator disabled';
     }
   }
@@ -280,9 +414,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
       };
 
-      statusLabel.textContent = '🎤 Listening via microphone...';
+      statusLabel.textContent = t('micListening');
     }).catch(() => {
-      statusLabel.textContent = 'Microphone permission denied';
+      statusLabel.textContent = t('micDenied');
       statusIndicator.className = 'status-indicator disabled';
     });
   }
@@ -297,6 +431,67 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Send to background
     chrome.runtime.sendMessage({ type: 'INCREMENT_SLAP' });
+  }
+
+  function parseSemver(version) {
+    const parts = String(version || '').split('.').map(n => parseInt(n, 10));
+    return [parts[0] || 0, parts[1] || 0, parts[2] || 0];
+  }
+
+  function compareVersions(a, b) {
+    const av = parseSemver(a);
+    const bv = parseSemver(b);
+    for (let i = 0; i < 3; i++) {
+      if (av[i] > bv[i]) return 1;
+      if (av[i] < bv[i]) return -1;
+    }
+    return 0;
+  }
+
+  async function checkForUpdates(manual) {
+    try {
+      updateStatusEl.textContent = t('checkingTags');
+      checkUpdateBtn.disabled = true;
+
+      const response = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/tags?per_page=20`, {
+        headers: { 'Accept': 'application/vnd.github+json' }
+      });
+
+      if (!response.ok) {
+        throw new Error('HTTP ' + response.status);
+      }
+
+      const tags = await response.json();
+      const versionTags = tags
+        .map(t => String(t.name || '').trim())
+        .filter(name => /^v?\d+\.\d+\.\d+$/.test(name));
+
+      if (versionTags.length === 0) {
+        updateStatusEl.textContent = t('noTags');
+        updateNowBtn.disabled = true;
+        return;
+      }
+
+      latestTag = versionTags[0];
+      const latestVersion = latestTag.replace(/^v/, '');
+      const cmp = compareVersions(latestVersion, currentVersion);
+
+      if (cmp > 0) {
+        updateStatusEl.textContent = tf('newVersion', { tag: latestTag });
+        updateNowBtn.disabled = false;
+      } else {
+        updateStatusEl.textContent = manual
+          ? tf('upToDateYou', { tag: latestTag })
+          : tf('upToDate', { tag: latestTag });
+        updateNowBtn.disabled = true;
+      }
+    } catch (err) {
+      updateStatusEl.textContent = t('updateFailed');
+      updateNowBtn.disabled = true;
+      console.warn('[SlapMac] Update check error:', err);
+    } finally {
+      checkUpdateBtn.disabled = false;
+    }
   }
 
   // Audio playback
@@ -322,7 +517,8 @@ document.addEventListener('DOMContentLoaded', async () => {
           volume: 1.0,
           cooldown: 1500,
           detectionMode: 'microphone',
-          slapCount: 0
+          slapCount: 0,
+          language: 'en'
         };
         const s = response || defaults;
         // Validate all values are within safe bounds
@@ -332,6 +528,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         s.slapCount = Math.max(0, Math.floor(Number(s.slapCount) || 0));
         s.enabled = typeof s.enabled === 'boolean' ? s.enabled : defaults.enabled;
         s.detectionMode = ['motion', 'microphone'].includes(s.detectionMode) ? s.detectionMode : defaults.detectionMode;
+        s.language = LANGUAGE_OPTIONS.some(x => x.code === s.language) ? s.language : 'en';
         resolve(s);
       });
     });
@@ -344,4 +541,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
     });
   }
+
+  checkForUpdates(false);
 });

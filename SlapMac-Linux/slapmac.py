@@ -3,9 +3,13 @@
 
 import tkinter as tk
 from tkinter import filedialog
+import json
 import os
+import re
 import sys
 import threading
+import urllib.request
+import webbrowser
 from slap_detector import SlapDetector
 from audio_manager import AudioManager
 
@@ -17,6 +21,9 @@ except ImportError:
 
 
 class SlapMacApp:
+    GITHUB_TAGS_API = "https://api.github.com/repos/trinhtanphat/SLAPMAC/tags?per_page=20"
+    RELEASES_URL = "https://github.com/trinhtanphat/SLAPMAC/releases/latest"
+
     def __init__(self):
         self.root = tk.Tk()
         self.root.title("SlapMac")
@@ -26,6 +33,16 @@ class SlapMacApp:
 
         self.slap_count = 0
         self.is_enabled = True
+        self.current_version = "1.0.0"
+        self.latest_tag = None
+        self.language_code = "en"
+        self.languages = [
+            ("en", "🇺🇸 English"), ("vi", "🇻🇳 Tieng Viet"), ("es", "🇪🇸 Espanol"), ("fr", "🇫🇷 Francais"),
+            ("de", "🇩🇪 Deutsch"), ("it", "🇮🇹 Italiano"), ("pt", "🇵🇹 Portugues"), ("ru", "🇷🇺 Russkiy"),
+            ("ja", "🇯🇵 Nihongo"), ("ko", "🇰🇷 Hangug-eo"), ("zh-CN", "🇨🇳 JianTi ZhongWen"), ("zh-TW", "🇹🇼 FanTi ZhongWen"),
+            ("th", "🇹🇭 Thai"), ("id", "🇮🇩 Bahasa Indonesia"), ("ms", "🇲🇾 Bahasa Melayu"), ("hi", "🇮🇳 Hindi"),
+            ("ar", "🇸🇦 Arabic"), ("tr", "🇹🇷 Turkce"), ("pl", "🇵🇱 Polski"), ("nl", "🇳🇱 Nederlands")
+        ]
 
         # Resource directory
         if getattr(sys, 'frozen', False):
@@ -39,6 +56,7 @@ class SlapMacApp:
 
         self._build_ui()
         self.detector.start()
+        self._check_updates(manual=False)
 
     def _build_ui(self):
         bg = "#161626"
@@ -55,6 +73,15 @@ class SlapMacApp:
         tk.Label(self.root, text="⚠ 18+ warning: adult-oriented sound content",
              font=("Arial", 9, "bold"), fg="#FFB74D", bg=bg).pack(pady=(4, 0))
 
+        lang_frame = tk.Frame(self.root, bg=bg)
+        lang_frame.pack(pady=(10, 0), padx=26, fill="x")
+        tk.Label(lang_frame, text=self._t("language"), font=("Arial", 10, "bold"), fg="#CCCCCC", bg=bg).pack(side="left")
+        self.language_var = tk.StringVar(value=self.languages[0][1])
+        self.language_menu = tk.OptionMenu(lang_frame, self.language_var, *[x[1] for x in self.languages], command=self._on_language_change)
+        self.language_menu.config(bg="#333350", fg="#FFFFFF", activebackground="#444466", activeforeground="#FFFFFF", bd=0, highlightthickness=0)
+        self.language_menu["menu"].config(bg="#1E1E36", fg="#FFFFFF")
+        self.language_menu.pack(side="right")
+
         # Counter
         self.counter_label = tk.Label(self.root, text="0",
                                       font=("Courier", 72, "bold"),
@@ -67,7 +94,7 @@ class SlapMacApp:
         btn_frame = tk.Frame(self.root, bg=bg)
         btn_frame.pack(pady=20)
 
-        self.toggle_btn = tk.Button(btn_frame, text="⏸ Pause", width=14,
+        self.toggle_btn = tk.Button(btn_frame, text=self._t("pause"), width=14,
                                      font=("Arial", 12, "bold"),
                                      fg=fg, bg=accent, bd=0,
                                      activebackground="#C73650",
@@ -75,13 +102,14 @@ class SlapMacApp:
                                      command=self._toggle)
         self.toggle_btn.pack(pady=4)
 
-        tk.Button(btn_frame, text="🔊 Test Sound", width=14,
+        self.test_btn = tk.Button(btn_frame, text=self._t("testSound"), width=14,
                   font=("Arial", 10), fg=fg, bg="#333350", bd=0,
                   activebackground="#444466", activeforeground=fg,
-                  command=self._test_sound).pack(pady=4)
+              command=self._test_sound)
+        self.test_btn.pack(pady=4)
 
         self.sounds_label = tk.Label(self.root,
-                                      text=f"{self.audio.sound_count} sound(s) loaded",
+                                      text=self._t("soundsLoaded").format(self.audio.sound_count),
                                       font=("Arial", 9), fg=gray, bg=bg)
         self.sounds_label.pack()
 
@@ -146,6 +174,80 @@ class SlapMacApp:
                   activebackground="#444466", activeforeground="#FFD700",
                   command=self._show_donate).pack(pady=4)
 
+        # Version update section
+        tk.Label(settings_frame, text=f"Version: v{self.current_version}",
+                 font=("Arial", 10, "bold"), fg="#FFD700", bg=bg).pack(pady=(18, 4), anchor="w")
+
+        self.update_status_label = tk.Label(
+            settings_frame,
+            text=self._t("checking"),
+            font=("Arial", 9),
+            fg=gray,
+            bg=bg,
+            anchor="w",
+            justify="left",
+        )
+        self.update_status_label.pack(fill="x", pady=(0, 6))
+
+        update_btn_frame = tk.Frame(settings_frame, bg=bg)
+        update_btn_frame.pack(fill="x", pady=(0, 8))
+
+        self.check_update_btn = tk.Button(
+            update_btn_frame,
+            text=self._t("checkUpdate"),
+            width=16,
+            font=("Arial", 10),
+            fg=fg,
+            bg="#333350",
+            bd=0,
+            activebackground="#444466",
+            activeforeground=fg,
+            command=lambda: self._check_updates(manual=True),
+        )
+        self.check_update_btn.pack(side="left")
+
+        self.update_now_btn = tk.Button(
+            update_btn_frame,
+            text=self._t("updateNow"),
+            width=16,
+            font=("Arial", 10, "bold"),
+            fg="#161626",
+            bg="#FFD166",
+            bd=0,
+            state="disabled",
+            activebackground="#FFBE3D",
+            activeforeground="#161626",
+            command=lambda: webbrowser.open(self.RELEASES_URL),
+        )
+        self.update_now_btn.pack(side="right")
+
+    def _on_language_change(self, selected):
+        for code, label in self.languages:
+            if label == selected:
+                self.language_code = code
+                break
+        self.toggle_btn.config(text=self._t("pause") if self.is_enabled else self._t("resume"))
+        self.test_btn.config(text=self._t("testSound"))
+        self.sounds_label.config(text=self._t("soundsLoaded").format(self.audio.sound_count))
+        self.check_update_btn.config(text=self._t("checkUpdate"))
+        self.update_now_btn.config(text=self._t("updateNow"))
+        self._check_updates(manual=False)
+
+    def _t(self, key):
+        vi = {
+            "language": "Ngon ngu", "pause": "⏸ Tam dung", "resume": "▶ Tiep tuc", "testSound": "🔊 Thu am thanh",
+            "soundsLoaded": "{0} am thanh da tai", "checkUpdate": "Kiem tra cap nhat", "updateNow": "Cap nhat ngay",
+            "checking": "Dang kiem tra GitHub tags...", "new": "Co ban moi: {0}", "upToDate": "Da moi nhat ({0}).",
+            "upToDateYou": "Ban dang o ban moi nhat ({0}).", "updateFailed": "Kiem tra cap nhat that bai.", "noTags": "Khong tim thay release tag."
+        }
+        en = {
+            "language": "Language", "pause": "⏸ Pause", "resume": "▶ Resume", "testSound": "🔊 Test Sound",
+            "soundsLoaded": "{0} sound(s) loaded", "checkUpdate": "Check Update", "updateNow": "Update Now",
+            "checking": "Checking GitHub tags...", "new": "New version available: {0}", "upToDate": "Up to date ({0}).",
+            "upToDateYou": "You're up to date ({0}).", "updateFailed": "Update check failed. Try again later.", "noTags": "No release tags found."
+        }
+        return (vi if self.language_code == "vi" else en).get(key, en.get(key, key))
+
     def _on_slap(self):
         if not self.is_enabled:
             return
@@ -160,11 +262,11 @@ class SlapMacApp:
         if self.is_enabled:
             self.is_enabled = False
             self.detector.stop()
-            self.toggle_btn.config(text="▶ Resume", bg="#28A745")
+            self.toggle_btn.config(text=self._t("resume"), bg="#28A745")
         else:
             self.is_enabled = True
             self.detector.start()
-            self.toggle_btn.config(text="⏸ Pause", bg="#E94560")
+            self.toggle_btn.config(text=self._t("pause"), bg="#E94560")
 
     def _test_sound(self):
         self.audio.play_random_sound()
@@ -194,7 +296,7 @@ class SlapMacApp:
         if path:
             if self.audio.add_custom_sound(path):
                 self.sounds_label.config(
-                    text=f"{self.audio.sound_count} sound(s) loaded")
+                    text=self._t("soundsLoaded").format(self.audio.sound_count))
 
     def _show_donate(self):
         win = tk.Toplevel(self.root)
@@ -262,6 +364,69 @@ class SlapMacApp:
                   fg="#FFFFFF", bg="#333350", bd=0,
                   activebackground="#444466", activeforeground="#FFFFFF",
                   command=win.destroy).pack(pady=(8, 20))
+
+    @staticmethod
+    def _compare_versions(a, b):
+        def parse(v):
+            parts = [int(x) for x in str(v).split(".")[:3] if x.isdigit()]
+            while len(parts) < 3:
+                parts.append(0)
+            return parts
+
+        av = parse(a)
+        bv = parse(b)
+        if av > bv:
+            return 1
+        if av < bv:
+            return -1
+        return 0
+
+    def _check_updates(self, manual=False):
+        self.check_update_btn.config(state="disabled")
+        self.update_now_btn.config(state="disabled")
+        self.update_status_label.config(text=self._t("checking"))
+
+        def worker():
+            try:
+                req = urllib.request.Request(
+                    self.GITHUB_TAGS_API,
+                    headers={
+                        "Accept": "application/vnd.github+json",
+                        "User-Agent": "SlapMac-Linux"
+                    }
+                )
+                with urllib.request.urlopen(req, timeout=10) as response:
+                    data = json.loads(response.read().decode("utf-8"))
+
+                version_tags = []
+                for item in data:
+                    name = str(item.get("name", "")).strip()
+                    if re.match(r"^v?\d+\.\d+\.\d+$", name):
+                        version_tags.append(name)
+
+                if not version_tags:
+                    self.root.after(0, lambda: self._set_update_result(self._t("noTags"), False))
+                    return
+
+                self.latest_tag = version_tags[0]
+                latest_version = self.latest_tag.lstrip("v")
+                cmp = self._compare_versions(latest_version, self.current_version)
+
+                if cmp > 0:
+                    self.root.after(0, lambda: self._set_update_result(
+                        self._t("new").format(self.latest_tag), True))
+                else:
+                    status = self._t("upToDateYou").format(self.latest_tag) if manual else self._t("upToDate").format(self.latest_tag)
+                    self.root.after(0, lambda: self._set_update_result(status, False))
+            except Exception:
+                self.root.after(0, lambda: self._set_update_result(self._t("updateFailed"), False))
+
+        threading.Thread(target=worker, daemon=True).start()
+
+    def _set_update_result(self, message, can_update):
+        self.update_status_label.config(text=message)
+        self.update_now_btn.config(state="normal" if can_update else "disabled")
+        self.check_update_btn.config(state="normal")
 
     def run(self):
         try:

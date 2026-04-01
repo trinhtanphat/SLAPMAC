@@ -1,10 +1,13 @@
 {
   "manifest_version": 3,
   "name": "SlapMac - Tap Sound Effect",
-  "version": "1.0.1",
+  "version": "1.0.12",
   "description": "18+ warning: adult-oriented sound content. Slap or tap your laptop and hear funny sounds via device motion sensors or microphone.",
   "homepage_url": "https://github.com/trinhtanphat/SLAPMAC",
   "permissions": ["storage"],
+  "host_permissions": [
+    "https://api.github.com/*"
+  ],
   "optional_permissions": [],
   "icons": {
     "16": "icons/icon16.png",

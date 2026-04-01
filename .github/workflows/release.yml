@@ -14,9 +14,82 @@ env:
 
 jobs:
   # ============================================================
+  # Job 0: Validate Tag/Version Consistency
+  # ============================================================
+  validate-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Validate release tag matches app versions
+        run: |
+          python3 - << 'PY'
+          import json
+          import os
+          import re
+          import sys
+          from pathlib import Path
+
+          tag = os.environ.get("GITHUB_REF_NAME", "")
+          if not re.match(r"^v\d+\.\d+\.\d+$", tag):
+              print(f"::error::Tag must be semantic version (vX.Y.Z). Got: {tag}")
+              sys.exit(1)
+
+          tag_version = tag[1:]
+
+          version_file = Path("VERSION")
+          repo_version = version_file.read_text(encoding="utf-8").strip() if version_file.exists() else ""
+
+          with open("SlapMac-Extension/manifest.json", "r", encoding="utf-8") as f:
+              ext_version = json.load(f).get("version", "")
+
+          gradle = Path("SlapMac-Android/app/build.gradle.kts").read_text(encoding="utf-8")
+          m = re.search(r'versionName\s*=\s*"([^"]+)"', gradle)
+          android_version = m.group(1) if m else ""
+
+          csproj = Path("SlapMac-Windows/SlapMac.csproj").read_text(encoding="utf-8")
+          m = re.search(r"<Version>([^<]+)</Version>", csproj)
+          windows_version = m.group(1).strip() if m else ""
+
+          ios_project = Path("SlapMac-iOS/project.yml").read_text(encoding="utf-8")
+          m = re.search(r'MARKETING_VERSION:\s*"([^"]+)"', ios_project)
+          ios_version = m.group(1).strip() if m else ""
+
+          mac_pbx = Path("SlapMac/SlapMac.xcodeproj/project.pbxproj").read_text(encoding="utf-8")
+          mac_versions = re.findall(r"MARKETING_VERSION = ([^;]+);", mac_pbx)
+
+          checks = {
+              "VERSION file": repo_version,
+              "Extension manifest": ext_version,
+              "Android versionName": android_version,
+              "Windows csproj Version": windows_version,
+              "iOS MARKETING_VERSION": ios_version,
+          }
+
+          failed = False
+          for name, value in checks.items():
+              if value != tag_version:
+                  print(f"::error::{name}={value} does not match tag {tag}")
+                  failed = True
+
+          for idx, value in enumerate(mac_versions):
+              if value.strip() != tag_version:
+                  print(f"::error::macOS MARKETING_VERSION[{idx}]={value.strip()} does not match tag {tag}")
+                  failed = True
+
+          if failed:
+              print("::error::Version mismatch detected. Sync versions before tagging.")
+              sys.exit(1)
+
+          print(f"✅ All versions match release tag {tag}")
+          PY
+
+  # ============================================================
   # Job 1: Build macOS App
   # ============================================================
   build-macos:
+    needs: validate-version
     runs-on: macos-latest
     steps:
       - name: Checkout
@@ -88,6 +161,7 @@ jobs:
   # Job 2: Build Windows App
   # ============================================================
   build-windows:
+    needs: validate-version
     runs-on: windows-latest
     steps:
       - name: Checkout
@@ -168,6 +242,7 @@ jobs:
   # Job 3: Build Chrome Extension
   # ============================================================
   build-extension:
+    needs: validate-version
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -236,6 +311,7 @@ jobs:
   # Job 4: Build iOS App
   # ============================================================
   build-ios:
+    needs: validate-version
     runs-on: macos-latest
     steps:
       - name: Checkout
@@ -290,6 +366,7 @@ jobs:
   # Job 5: Build Android App
   # ============================================================
   build-android:
+    needs: validate-version
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -342,6 +419,7 @@ jobs:
   # Job 6: Build Linux App
   # ============================================================
   build-linux:
+    needs: validate-version
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

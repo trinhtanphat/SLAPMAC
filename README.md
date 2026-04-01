@@ -400,12 +400,20 @@ Automated builds via GitHub Actions.
 
 ### Trigger a Release
 ```bash
-# Tag and push to trigger automatic build + release
-git tag v1.0.0
-git push origin v1.0.0
+# 1) One command to sync all version files
+powershell -ExecutionPolicy Bypass -File ./bump-version.ps1 1.0.12
+
+# 2) Commit
+git add -A
+git commit -m "chore: release v1.0.12"
+
+# 3) Tag and push to trigger automatic build + release
+git tag v1.0.12
+git push origin main
+git push origin v1.0.12
 ```
 
-Or use **Actions → Run workflow** for manual dispatch.
+Release workflow is tag-driven only (`vX.Y.Z`) and will fail if any app version does not match the pushed tag.
 
 ### What the CI/CD Does
 1. **macOS Job** — Builds Universal binary (arm64 + x86_64), creates DMG + ZIP
@@ -423,7 +431,7 @@ Or use **Actions → Run workflow** for manual dispatch.
 - ✅ App Sandbox + Hardened Runtime (macOS)
 - ✅ Filename sanitization for custom sounds (path traversal prevention)
 - ✅ Audio file extension whitelist validation
-- ✅ No external network requests (fully offline)
+- ✅ Version update checks use GitHub API only (`api.github.com`)
 - ✅ Extension uses minimal permissions (`storage` only)
 - ✅ Single-instance enforcement (Windows)
 - ✅ No private APIs used

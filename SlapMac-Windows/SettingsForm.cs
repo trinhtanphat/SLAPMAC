@@ -1,25 +1,51 @@
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
+using System.Net.Http;
+using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
 namespace SlapMac
 {
     sealed class SettingsForm : Form
     {
+        private const string GitHubTagsApi = "https://api.github.com/repos/trinhtanphat/SLAPMAC/tags?per_page=20";
+        private const string ReleasesUrl = "https://github.com/trinhtanphat/SLAPMAC/releases/latest";
+
         private readonly SlapDetector _detector;
         private readonly AudioManager _audio;
+        private readonly string _currentVersion;
+        private string _language = "en";
+
+        private Label _updateStatusLabel = null!;
+        private Button _updateNowBtn = null!;
+        private Button _checkUpdateBtn = null!;
+        private ComboBox _languageCombo = null!;
+
+        private static readonly (string Code, string Label)[] Languages = new[]
+        {
+            ("en", "🇺🇸 English"), ("vi", "🇻🇳 Tieng Viet"), ("es", "🇪🇸 Espanol"), ("fr", "🇫🇷 Francais"),
+            ("de", "🇩🇪 Deutsch"), ("it", "🇮🇹 Italiano"), ("pt", "🇵🇹 Portugues"), ("ru", "🇷🇺 Russkiy"),
+            ("ja", "🇯🇵 Nihongo"), ("ko", "🇰🇷 Hangug-eo"), ("zh-CN", "🇨🇳 JianTi ZhongWen"), ("zh-TW", "🇹🇼 FanTi ZhongWen"),
+            ("th", "🇹🇭 Thai"), ("id", "🇮🇩 Bahasa Indonesia"), ("ms", "🇲🇾 Bahasa Melayu"), ("hi", "🇮🇳 Hindi"),
+            ("ar", "🇸🇦 Arabic"), ("tr", "🇹🇷 Turkce"), ("pl", "🇵🇱 Polski"), ("nl", "🇳🇱 Nederlands")
+        };
 
         public SettingsForm(SlapDetector detector, AudioManager audio)
         {
             _detector = detector;
             _audio = audio;
+            _currentVersion = Application.ProductVersion;
+            _language = (Application.UserAppDataRegistry.GetValue("Language", "en") as string) ?? "en";
             InitializeUI();
         }
 
         private void InitializeUI()
         {
             Text = "SlapMac Settings ⚙️";
-            Size = new Size(440, 480);
+            Size = new Size(440, 560);
             StartPosition = FormStartPosition.CenterScreen;
             FormBorderStyle = FormBorderStyle.FixedDialog;
             MaximizeBox = false;
@@ -40,6 +66,31 @@ namespace SlapMac
             };
             Controls.Add(title);
             y += 50;
+
+            Controls.Add(CreateSectionLabel("Language", 30, y));
+            _languageCombo = new ComboBox
+            {
+                DropDownStyle = ComboBoxStyle.DropDownList,
+                Font = new Font("Segoe UI", 9),
+                Size = new Size(260, 28),
+                Location = new Point(120, y - 2),
+                BackColor = Color.FromArgb(45, 55, 72),
+                ForeColor = Color.White,
+            };
+            foreach (var item in Languages)
+            {
+                _languageCombo.Items.Add(item.Label);
+            }
+            var index = Array.FindIndex(Languages, x => x.Code == _language);
+            _languageCombo.SelectedIndex = index >= 0 ? index : 0;
+            _languageCombo.SelectedIndexChanged += (s, e) =>
+            {
+                _language = Languages[_languageCombo.SelectedIndex].Code;
+                Application.UserAppDataRegistry.SetValue("Language", _language);
+                ApplyLocalizedLabels();
+            };
+            Controls.Add(_languageCombo);
+            y += 36;
 
             // ── Sensitivity ──
             Controls.Add(CreateSectionLabel("Detection Sensitivity", 30, y));
@@ -165,6 +216,74 @@ namespace SlapMac
             Controls.Add(soundInfo);
             y += 55;
 
+            Controls.Add(new Panel
+            {
+                Size = new Size(370, 1),
+                Location = new Point(20, y),
+                BackColor = Color.FromArgb(50, 50, 70),
+            });
+            y += 15;
+
+            Controls.Add(CreateSectionLabel("Version", 30, y));
+
+            var currentVersionLabel = new Label
+            {
+                Text = $"Current: v{_currentVersion}",
+                Font = new Font("Segoe UI", 9, FontStyle.Bold),
+                ForeColor = Color.FromArgb(255, 215, 0),
+                AutoSize = true,
+                Location = new Point(260, y + 2),
+            };
+            Controls.Add(currentVersionLabel);
+            y += 28;
+
+            _updateStatusLabel = new Label
+            {
+                Text = "Checking updates...",
+                Font = new Font("Segoe UI", 8),
+                ForeColor = Color.FromArgb(120, 130, 150),
+                AutoSize = true,
+                Location = new Point(30, y),
+            };
+            Controls.Add(_updateStatusLabel);
+            y += 24;
+
+            _checkUpdateBtn = new Button
+            {
+                Text = "Check Update",
+                Font = new Font("Segoe UI", 9, FontStyle.Bold),
+                ForeColor = Color.White,
+                BackColor = Color.FromArgb(45, 55, 72),
+                FlatStyle = FlatStyle.Flat,
+                Size = new Size(140, 34),
+                Location = new Point(30, y),
+                Cursor = Cursors.Hand,
+            };
+            _checkUpdateBtn.FlatAppearance.BorderColor = Color.FromArgb(60, 70, 90);
+            _checkUpdateBtn.Click += async (s, e) => await CheckForUpdatesAsync(true);
+            Controls.Add(_checkUpdateBtn);
+
+            _updateNowBtn = new Button
+            {
+                Text = "Update Now",
+                Font = new Font("Segoe UI", 9, FontStyle.Bold),
+                ForeColor = Color.White,
+                BackColor = Color.FromArgb(233, 69, 96),
+                FlatStyle = FlatStyle.Flat,
+                Size = new Size(140, 34),
+                Location = new Point(200, y),
+                Cursor = Cursors.Hand,
+                Enabled = false,
+            };
+            _updateNowBtn.FlatAppearance.BorderSize = 0;
+            _updateNowBtn.Click += (s, e) => Process.Start(new ProcessStartInfo
+            {
+                FileName = ReleasesUrl,
+                UseShellExecute = true,
+            });
+            Controls.Add(_updateNowBtn);
+            y += 50;
+
             // ── Close Button ──
             var closeBtn = new Button
             {
@@ -181,6 +300,96 @@ namespace SlapMac
             closeBtn.Click += (s, e) => Close();
             Controls.Add(closeBtn);
             AcceptButton = closeBtn;
+
+            ApplyLocalizedLabels();
+            _ = CheckForUpdatesAsync(false);
+        }
+
+        private void ApplyLocalizedLabels()
+        {
+            Text = _language == "vi" ? "Cai dat SlapMac ⚙️" : "SlapMac Settings ⚙️";
+            _checkUpdateBtn.Text = _language == "vi" ? "Kiem tra cap nhat" : "Check Update";
+            _updateNowBtn.Text = _language == "vi" ? "Cap nhat ngay" : "Update Now";
+        }
+
+        private async System.Threading.Tasks.Task CheckForUpdatesAsync(bool manual)
+        {
+            _updateStatusLabel.Text = _language == "vi" ? "Dang kiem tra GitHub tags..." : "Checking GitHub tags...";
+            _updateNowBtn.Enabled = false;
+            _checkUpdateBtn.Enabled = false;
+
+            try
+            {
+                using var http = new HttpClient();
+                http.DefaultRequestHeaders.UserAgent.ParseAdd("SlapMac-Windows");
+                var json = await http.GetStringAsync(GitHubTagsApi);
+                using var doc = JsonDocument.Parse(json);
+
+                string? latestTag = null;
+                foreach (var item in doc.RootElement.EnumerateArray())
+                {
+                    if (!item.TryGetProperty("name", out var nameProp))
+                        continue;
+                    var tag = nameProp.GetString();
+                    if (!string.IsNullOrWhiteSpace(tag) && Regex.IsMatch(tag, "^v?\\d+\\.\\d+\\.\\d+$"))
+                    {
+                        latestTag = tag;
+                        break;
+                    }
+                }
+
+                if (string.IsNullOrWhiteSpace(latestTag))
+                {
+                    _updateStatusLabel.Text = _language == "vi" ? "Khong tim thay release tag." : "No release tags found.";
+                    return;
+                }
+
+                var latestVersion = latestTag.TrimStart('v');
+                var cmp = CompareVersions(latestVersion, _currentVersion);
+                if (cmp > 0)
+                {
+                    _updateStatusLabel.Text = _language == "vi" ? $"Co ban moi: {latestTag}" : $"New version available: {latestTag}";
+                    _updateNowBtn.Enabled = true;
+                }
+                else
+                {
+                    _updateStatusLabel.Text = manual
+                        ? (_language == "vi" ? $"Ban dang o ban moi nhat ({latestTag})." : $"You're up to date ({latestTag}).")
+                        : (_language == "vi" ? $"Da moi nhat ({latestTag})." : $"Up to date ({latestTag}).");
+                }
+            }
+            catch
+            {
+                _updateStatusLabel.Text = _language == "vi" ? "Kiem tra cap nhat that bai. Thu lai sau." : "Update check failed. Try again later.";
+            }
+            finally
+            {
+                _checkUpdateBtn.Enabled = true;
+            }
+        }
+
+        private static int CompareVersions(string a, string b)
+        {
+            var av = ParseVersion(a);
+            var bv = ParseVersion(b);
+            for (int i = 0; i < 3; i++)
+            {
+                if (av[i] > bv[i]) return 1;
+                if (av[i] < bv[i]) return -1;
+            }
+            return 0;
+        }
+
+        private static int[] ParseVersion(string version)
+        {
+            var clean = Regex.Match(version, "\\d+\\.\\d+\\.\\d+").Value;
+            var parts = clean.Split('.');
+            return new[]
+            {
+                parts.Length > 0 && int.TryParse(parts[0], out var major) ? major : 0,
+                parts.Length > 1 && int.TryParse(parts[1], out var minor) ? minor : 0,
+                parts.Length > 2 && int.TryParse(parts[2], out var patch) ? patch : 0,
+            };
         }
 
         private static Label CreateSectionLabel(string text, int x, int y)
