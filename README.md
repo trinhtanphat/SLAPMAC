@@ -415,11 +415,17 @@ git push origin v1.0.12
 
 ### Localization Guard
 ```bash
+# Sync i18n source to all platform resource files
+python scripts/sync-i18n.py
+
 # Validate extension localization (20 languages + key consistency)
 python scripts/validate-i18n.py
 
 # Validate localization resources for all platforms
 python scripts/validate-platform-i18n.py
+
+# Ensure every platform i18n file exactly matches source
+python scripts/check-i18n-consistency.py
 ```
 
 Release workflow is tag-driven only (`vX.Y.Z`) and will fail if any app version does not match the pushed tag.

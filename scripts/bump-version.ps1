@@ -62,6 +62,16 @@ Replace-Regex -Path "SlapMac-Windows/SlapMac.csproj" -Pattern '<Version>[^<]+</V
 Replace-Regex -Path "SlapMac-iOS/project.yml" -Pattern 'MARKETING_VERSION:\s*"[^"]+"' -Replacement ('MARKETING_VERSION: "' + $Version + '"') -Label "iOS MARKETING_VERSION"
 Replace-Regex -Path "SlapMac/SlapMac.xcodeproj/project.pbxproj" -Pattern 'MARKETING_VERSION = [^;]+;' -Replacement ('MARKETING_VERSION = ' + $Version + ';') -Label "macOS MARKETING_VERSION"
 
+$syncScriptPath = Join-Path $repoRoot "scripts/sync-i18n.py"
+if (Test-Path $syncScriptPath) {
+    & python $syncScriptPath
+    if ($LASTEXITCODE -ne 0) {
+        throw "Failed to sync i18n resources"
+    }
+} else {
+    Write-Host "Skipping i18n sync (scripts/sync-i18n.py not found)"
+}
+
 Write-Host "\nDone. Version synced to $Version"
 Write-Host "Next steps:"
 Write-Host "  git add -A"
