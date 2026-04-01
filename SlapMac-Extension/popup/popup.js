@@ -76,16 +76,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   showDonateBtn.addEventListener('click', () => {
-    donateModal.style.display = 'flex';
+    donateModal.classList.add('modal-open');
   });
 
   closeDonateBtn.addEventListener('click', () => {
-    donateModal.style.display = 'none';
+    donateModal.classList.remove('modal-open');
   });
 
   donateModal.addEventListener('click', (e) => {
     if (e.target === donateModal) {
-      donateModal.style.display = 'none';
+      donateModal.classList.remove('modal-open');
     }
   });
 
@@ -107,10 +107,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function animateSlap() {
     const counter = document.querySelector('.counter-value');
-    counter.style.transform = 'scale(1.3)';
-    counter.style.transition = 'transform 0.15s';
+    counter.classList.remove('bump');
+    // Reflow ensures animation can replay when taps happen quickly.
+    void counter.offsetWidth;
+    counter.classList.add('bump');
     setTimeout(() => {
-      counter.style.transform = 'scale(1)';
+      counter.classList.remove('bump');
     }, 150);
   }
 

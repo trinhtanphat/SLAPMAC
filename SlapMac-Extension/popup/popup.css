@@ -167,6 +167,11 @@ input:checked + .slider::before {
   font-size: 24px;
   font-weight: 700;
   color: #e94560;
+  transition: transform 0.15s;
+}
+
+.counter-value.bump {
+  transform: scale(1.3);
 }
 
 /* Controls */
@@ -288,10 +293,14 @@ input[type="range"]::-webkit-slider-thumb {
   height: 100%;
   background: rgba(0,0,0,0.7);
   z-index: 1000;
-  display: flex;
+  display: none;
   align-items: flex-start;
   justify-content: center;
   overflow-y: auto;
+}
+
+.modal.modal-open {
+  display: flex;
 }
 
 .modal-content {
