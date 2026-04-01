@@ -1,8 +1,9 @@
 {
   "manifest_version": 3,
   "name": "SlapMac - Tap Sound Effect",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Slap or tap your laptop and hear funny sounds! Detects physical taps via device motion sensors or microphone.",
+  "homepage_url": "https://github.com/trinhtanphat/SLAPMAC",
   "permissions": ["storage"],
   "optional_permissions": [],
   "icons": {

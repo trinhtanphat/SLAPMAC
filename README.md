@@ -241,6 +241,11 @@ python3 slapmac.py
 - Chrome, Edge, Brave, or any Chromium browser
 - Laptop with motion sensors OR microphone
 
+### Important Before Install
+- This extension is not on the Chrome Web Store yet
+- There is no built-in setup wizard in the browser
+- You must load it manually as an unpacked extension from a folder containing `manifest.json`
+
 ### Detection Modes
 | Mode | API | Best For |
 |------|-----|----------|
@@ -249,11 +254,32 @@ python3 slapmac.py
 
 ### Install
 1. Download `SlapMac-Extension.zip` from [Releases](../../releases/latest)
-2. Extract to a folder
-3. Open `chrome://extensions`
-4. Enable **Developer mode** (top right)
-5. Click **Load unpacked** → select the extracted folder
-6. Click the SlapMac icon in toolbar
+2. Extract the ZIP completely
+3. Open the extracted folder and confirm it contains `manifest.json`, `background/`, `popup/`, and `icons/`
+4. Open `chrome://extensions`
+5. Enable **Developer mode** (top right)
+6. Click **Load unpacked**
+7. Select the extracted `SlapMac-Extension` folder
+8. Open the browser extensions menu and pin SlapMac
+9. Click the SlapMac icon in the toolbar to open the popup
+10. If using **Microphone** mode, allow microphone access when prompted
+
+### How To Use
+- Keep the popup open while detection is running
+- Use **Microphone** mode on most desktops and laptops
+- Use **Motion Sensor** only if your browser/device exposes motion data
+- Increase cooldown if one hit triggers too many sounds
+
+### Common Issues
+- If you only downloaded the ZIP but did not extract it: the browser cannot load it
+- If **Load unpacked** fails: select the folder that directly contains `manifest.json`
+- If the icon is missing: pin SlapMac from the browser extensions menu
+- If the popup closes: slap detection stops
+- If you want one-click install: this must be published to the Chrome Web Store first
+
+### Publisher Notes
+- Privacy policy draft: `SlapMac-Extension/PRIVACY-POLICY.md`
+- Chrome Web Store checklist and listing draft: `SlapMac-Extension/WEB-STORE.md`
 
 ### Features
 - Dark gradient UI with animations
