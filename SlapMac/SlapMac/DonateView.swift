@@ -14,6 +14,11 @@ struct DonateView: View {
                         .font(.body)
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)
+
+                    Text("⚠ 18+ warning: adult-oriented sound content")
+                        .font(.caption)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.orange)
                 }
                 .padding(.top, 16)
                 

@@ -310,6 +310,8 @@ final class StatusBarController {
         alert.messageText = "SlapMac"
         alert.informativeText = """
         Version 1.0.0
+
+        ⚠ 18+ warning: adult-oriented sound content
         
         Slap your MacBook, hear funny sounds! 🖐💻
         

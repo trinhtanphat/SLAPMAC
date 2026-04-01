@@ -223,6 +223,9 @@ class SlapMacApp:
                  "If you enjoy it, consider supporting 😊",
                  font=("Arial", 10), fg="#8899AA", bg=bg,
                  justify="center").pack(pady=(0, 16))
+        tk.Label(frame, text="⚠ 18+ warning: adult-oriented sound content",
+             font=("Arial", 9, "bold"), fg="#FFB74D", bg=bg,
+             justify="center").pack(pady=(0, 8))
 
         # Determine resource directory
         if getattr(sys, 'frozen', False):

@@ -19,6 +19,11 @@ struct DonateView: View {
                         .foregroundColor(.gray)
                         .multilineTextAlignment(.center)
 
+                    Text("⚠ 18+ warning: adult-oriented sound content")
+                        .font(.caption)
+                        .foregroundColor(.orange)
+                        .multilineTextAlignment(.center)
+
                     // MoMo
                     qrSection(title: "MoMo", imageName: "momo.jpeg")
 

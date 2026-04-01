@@ -53,7 +53,18 @@ namespace SlapMac
                 TextAlign = ContentAlignment.MiddleCenter,
             };
             panel.Controls.Add(subtitle);
-            y += 60;
+            y += 52;
+
+            var warning = new Label
+            {
+                Text = "⚠ 18+ adult-oriented sound content",
+                Font = new Font("Segoe UI", 9, FontStyle.Bold),
+                ForeColor = Color.FromArgb(255, 184, 77),
+                AutoSize = true,
+                Location = new Point(105, y),
+            };
+            panel.Controls.Add(warning);
+            y += 32;
 
             // MoMo
             var momoLabel = new Label
