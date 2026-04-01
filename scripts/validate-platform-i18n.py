@@ -76,6 +76,12 @@ def validate_file(path: Path) -> list[str]:
             errors.append(f"{path.relative_to(ROOT)}: translation block '{code}' must be object")
             continue
 
+        missing_keys = required_keys - set(block.keys())
+        if missing_keys:
+            errors.append(
+                f"{path.relative_to(ROOT)}: language '{code}' missing keys: {', '.join(sorted(missing_keys))}"
+            )
+
         unknown_keys = set(block.keys()) - required_keys
         if unknown_keys:
             errors.append(

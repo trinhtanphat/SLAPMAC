@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Net.Http;
+using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
@@ -14,6 +15,7 @@ namespace SlapMac
     {
         private const string GitHubTagsApi = "https://api.github.com/repos/trinhtanphat/SLAPMAC/tags?per_page=20";
         private const string ReleasesUrl = "https://github.com/trinhtanphat/SLAPMAC/releases/latest";
+        private const string ReleaseAssetBase = "https://github.com/trinhtanphat/SLAPMAC/releases/latest/download/";
 
         private readonly SlapDetector _detector;
         private readonly AudioManager _audio;
@@ -318,11 +320,7 @@ namespace SlapMac
                 Enabled = false,
             };
             _updateNowBtn.FlatAppearance.BorderSize = 0;
-            _updateNowBtn.Click += (s, e) => Process.Start(new ProcessStartInfo
-            {
-                FileName = ReleasesUrl,
-                UseShellExecute = true,
-            });
+            _updateNowBtn.Click += async (s, e) => await DownloadLatestUpdateAsync();
             Controls.Add(_updateNowBtn);
             y += 50;
 
@@ -468,6 +466,55 @@ namespace SlapMac
             finally
             {
                 _checkUpdateBtn.Enabled = true;
+            }
+        }
+
+        private async System.Threading.Tasks.Task DownloadLatestUpdateAsync()
+        {
+            _updateNowBtn.Enabled = false;
+            _checkUpdateBtn.Enabled = false;
+            _updateStatusLabel.Text = "Downloading latest update package...";
+
+            try
+            {
+                var assetName = RuntimeInformation.ProcessArchitecture == Architecture.Arm64
+                    ? "SlapMac-Windows-arm64.zip"
+                    : "SlapMac-Windows-x64.zip";
+
+                var downloadUrl = ReleaseAssetBase + assetName;
+                var downloadsDir = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                    "Downloads"
+                );
+                Directory.CreateDirectory(downloadsDir);
+                var outputPath = Path.Combine(downloadsDir, assetName);
+
+                using var http = new HttpClient();
+                http.DefaultRequestHeaders.UserAgent.ParseAdd("SlapMac-Windows-Updater");
+                var data = await http.GetByteArrayAsync(downloadUrl);
+                await File.WriteAllBytesAsync(outputPath, data);
+
+                _updateStatusLabel.Text = $"Downloaded: {assetName} (Downloads folder)";
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = "explorer.exe",
+                    Arguments = $"/select,\"{outputPath}\"",
+                    UseShellExecute = true,
+                });
+            }
+            catch
+            {
+                _updateStatusLabel.Text = "Auto-download failed. Opening release page...";
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = ReleasesUrl,
+                    UseShellExecute = true,
+                });
+            }
+            finally
+            {
+                _checkUpdateBtn.Enabled = true;
+                _updateNowBtn.Enabled = true;
             }
         }
 

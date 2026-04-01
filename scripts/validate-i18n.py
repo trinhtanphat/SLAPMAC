@@ -39,12 +39,17 @@ def main() -> int:
             print(f"::error::Translation block '{code}' must be an object")
             return 1
 
+        missing = required_keys - set(values.keys())
+        if missing:
+            print(f"::error::Language '{code}' is missing keys: {', '.join(sorted(missing))}")
+            return 1
+
         unknown = set(values.keys()) - required_keys
         if unknown:
             print(f"::error::Language '{code}' contains unknown keys: {', '.join(sorted(unknown))}")
             return 1
 
-    print("✅ i18n validation passed (20 languages + key consistency)")
+    print("✅ i18n validation passed (20 languages + full key coverage)")
     return 0
 
 

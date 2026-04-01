@@ -23,6 +23,7 @@ except ImportError:
 class SlapMacApp:
     GITHUB_TAGS_API = "https://api.github.com/repos/trinhtanphat/SLAPMAC/tags?per_page=20"
     RELEASES_URL = "https://github.com/trinhtanphat/SLAPMAC/releases/latest"
+    LINUX_ASSET_URL = "https://github.com/trinhtanphat/SLAPMAC/releases/latest/download/SlapMac-Linux.zip"
 
     def __init__(self):
         self.root = tk.Tk()
@@ -219,7 +220,7 @@ class SlapMacApp:
             state="disabled",
             activebackground="#FFBE3D",
             activeforeground="#161626",
-            command=lambda: webbrowser.open(self.RELEASES_URL),
+            command=self._download_latest_update,
         )
         self.update_now_btn.pack(side="right")
 
@@ -494,6 +495,40 @@ class SlapMacApp:
         self.update_status_label.config(text=message)
         self.update_now_btn.config(state="normal" if can_update else "disabled")
         self.check_update_btn.config(state="normal")
+
+    def _download_latest_update(self):
+        self.update_now_btn.config(state="disabled")
+        self.check_update_btn.config(state="disabled")
+        self.update_status_label.config(text="Downloading latest Linux package...")
+
+        def worker():
+            try:
+                downloads_dir = os.path.join(os.path.expanduser("~"), "Downloads")
+                os.makedirs(downloads_dir, exist_ok=True)
+                output_path = os.path.join(downloads_dir, "SlapMac-Linux.zip")
+                urllib.request.urlretrieve(self.LINUX_ASSET_URL, output_path)
+
+                def done_ok():
+                    self.update_status_label.config(text="Downloaded: SlapMac-Linux.zip (Downloads folder)")
+                    self.check_update_btn.config(state="normal")
+                    self.update_now_btn.config(state="normal")
+                    try:
+                        if sys.platform.startswith("linux"):
+                            os.system(f'xdg-open "{downloads_dir}" >/dev/null 2>&1 &')
+                    except Exception:
+                        pass
+
+                self.root.after(0, done_ok)
+            except Exception:
+                def done_fail():
+                    self.update_status_label.config(text="Auto-download failed. Opening release page...")
+                    self.check_update_btn.config(state="normal")
+                    self.update_now_btn.config(state="normal")
+                    webbrowser.open(self.RELEASES_URL)
+
+                self.root.after(0, done_fail)
+
+        threading.Thread(target=worker, daemon=True).start()
 
     def run(self):
         try:

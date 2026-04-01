@@ -26,12 +26,6 @@
   "background": {
     "service_worker": "background/service-worker.js",
     "type": "module"
-  },
-  "web_accessible_resources": [
-    {
-      "resources": ["audio/*", "images/*"],
-      "matches": ["<all_urls>"]
-    }
-  ]
+  }
 }
 
