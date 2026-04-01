@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import argparse
 import json
 import re
 from pathlib import Path
@@ -7,18 +8,33 @@ ROOT = Path(__file__).resolve().parents[1]
 VERSION_FILE = ROOT / "VERSION"
 
 
-def read_version() -> str:
+def normalize_semver(raw: str) -> str:
+    value = raw.strip()
+    version = value[1:] if value.startswith("v") else value
+    if not re.match(r"^\d+\.\d+\.\d+$", version):
+        raise ValueError(f"Version must be X.Y.Z or vX.Y.Z, got: {raw}")
+    return version
+
+
+def resolve_version(cli_version: str | None, cli_tag: str | None) -> str:
+    if cli_version and cli_tag:
+        raise ValueError("Use only one of --version or --tag")
+
+    if cli_tag:
+        return normalize_semver(cli_tag)
+
+    if cli_version:
+        return normalize_semver(cli_version)
+
     if not VERSION_FILE.exists():
         raise FileNotFoundError(f"Missing VERSION file: {VERSION_FILE}")
 
-    raw = VERSION_FILE.read_text(encoding="utf-8").strip()
-    version = raw[1:] if raw.startswith("v") else raw
-    if not re.match(r"^\d+\.\d+\.\d+$", version):
-        raise ValueError(f"VERSION must be X.Y.Z or vX.Y.Z, got: {raw}")
+    return normalize_semver(VERSION_FILE.read_text(encoding="utf-8").strip())
 
-    # Normalize VERSION file to plain semantic version.
+
+def write_version_file(version: str) -> None:
+    # Keep VERSION normalized even when source is a tag.
     VERSION_FILE.write_text(version + "\n", encoding="utf-8")
-    return version
 
 
 def replace_regex(path: Path, pattern: str, replacement: str, label: str) -> None:
@@ -74,10 +90,17 @@ def sync(version: str) -> None:
 
 
 def main() -> int:
+    parser = argparse.ArgumentParser(description="Sync app versions from VERSION, tag, or explicit version")
+    parser.add_argument("--version", help="Semantic version (X.Y.Z or vX.Y.Z)")
+    parser.add_argument("--tag", help="Git tag to use as source (vX.Y.Z)")
+    args = parser.parse_args()
+
     try:
-        version = read_version()
+        version = resolve_version(args.version, args.tag)
+        write_version_file(version)
         sync(version)
-        print(f"Done. Synced all platform versions from VERSION={version}")
+        source = "tag" if args.tag else ("--version" if args.version else "VERSION")
+        print(f"Done. Synced all platform versions from {source}={version}")
         return 0
     except Exception as exc:
         print(f"ERROR: {exc}")

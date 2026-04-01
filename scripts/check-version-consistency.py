@@ -58,6 +58,14 @@ def main() -> int:
         print(f"::error:: {exc}")
         return 1
 
+    expected_version = version
+    if args.tag:
+        tag = args.tag.strip()
+        if not re.match(r"^v\d+\.\d+\.\d+$", tag):
+            print(f"::error::Tag must be semantic version (vX.Y.Z). Got: {tag}")
+            return 1
+        expected_version = tag[1:]
+
     failed = False
 
     checks = {
@@ -69,30 +77,26 @@ def main() -> int:
     }
 
     for name, value in checks.items():
-        if value != version:
-            print(f"::error::{name}={value} does not match VERSION {version}")
+        if value != expected_version:
+            print(f"::error::{name}={value} does not match expected version {expected_version}")
             failed = True
 
     mac_versions = extract_mac_versions()
     for idx, value in enumerate(mac_versions):
-        if value != version:
-            print(f"::error::macOS MARKETING_VERSION[{idx}]={value} does not match VERSION {version}")
+        if value != expected_version:
+            print(f"::error::macOS MARKETING_VERSION[{idx}]={value} does not match expected version {expected_version}")
             failed = True
 
     if args.tag:
-        tag = args.tag.strip()
-        if not re.match(r"^v\d+\.\d+\.\d+$", tag):
-            print(f"::error::Tag must be semantic version (vX.Y.Z). Got: {tag}")
-            failed = True
-        elif tag[1:] != version:
-            print(f"::error::VERSION {version} does not match pushed tag {tag}")
+        if version != expected_version:
+            print(f"::error::VERSION {version} does not match pushed tag {args.tag}")
             failed = True
 
     if failed:
         print("::error::Version mismatch detected. Run: python scripts/sync-version.py")
         return 1
 
-    print(f"OK: all platform versions are consistent with VERSION={version}")
+    print(f"OK: all platform versions are consistent with {expected_version}")
     if args.tag:
         print(f"OK: tag {args.tag} matches VERSION")
     return 0

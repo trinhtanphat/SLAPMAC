@@ -22,6 +22,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
+      - name: Sync versions from release tag
+        run: python3 scripts/sync-version.py --tag "${GITHUB_REF_NAME}"
+
       - name: Validate release tag matches VERSION and app versions
         run: python3 scripts/check-version-consistency.py --tag "${GITHUB_REF_NAME}"
 
@@ -43,6 +46,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+
+      - name: Sync versions from release tag
+        run: python3 scripts/sync-version.py --tag "${GITHUB_REF_NAME}"
 
       - name: Setup resources
         run: |
@@ -115,6 +121,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+
+      - name: Sync versions from release tag
+        shell: pwsh
+        run: python scripts/sync-version.py --tag "${env:GITHUB_REF_NAME}"
 
       - name: Setup .NET 8
         uses: actions/setup-dotnet@v5
@@ -197,6 +207,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
+      - name: Sync versions from release tag
+        run: python3 scripts/sync-version.py --tag "${GITHUB_REF_NAME}"
+
       - name: Setup extension resources
         run: |
           mkdir -p SlapMac-Extension/audio
@@ -266,6 +279,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
+      - name: Sync versions from release tag
+        run: python3 scripts/sync-version.py --tag "${GITHUB_REF_NAME}"
+
       - name: Install XcodeGen
         run: brew install xcodegen
 
@@ -321,6 +337,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
+      - name: Sync versions from release tag
+        run: python3 scripts/sync-version.py --tag "${GITHUB_REF_NAME}"
+
       - name: Set up JDK 17
         uses: actions/setup-java@v5
         with:
@@ -373,6 +392,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+
+      - name: Sync versions from release tag
+        run: python3 scripts/sync-version.py --tag "${GITHUB_REF_NAME}"
 
       - name: Setup Python
         uses: actions/setup-python@v6

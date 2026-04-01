@@ -400,21 +400,17 @@ Automated builds via GitHub Actions.
 
 ### Trigger a Release
 ```bash
-# 1) Set VERSION (single source of truth)
-echo 1.0.14 > VERSION
-
-# 2) Sync VERSION into all app manifests/project files
-python scripts/sync-version.py
-
-# 3) Commit
+# 1) Commit your release changes (no manual version sync required)
 git add -A
 git commit -m "chore: release v1.0.14"
 
-# 4) Tag and push to trigger automatic build + release
+# 2) Tag and push to trigger automatic build + release
 git tag v1.0.14
 git push origin main
 git push origin v1.0.14
 ```
+
+The release workflow treats the pushed tag as canonical version and auto-syncs all version files during CI builds.
 
 Or use one command:
 ```bash
@@ -423,8 +419,11 @@ powershell -ExecutionPolicy Bypass -File ./bump-version.ps1 1.0.14
 
 ### Version Guard
 ```bash
-# Validate VERSION against all app version fields
+# Validate current source files against VERSION
 python scripts/check-version-consistency.py
+
+# Validate against a release tag (tag-first mode)
+python scripts/check-version-consistency.py --tag v1.0.14
 ```
 
 ### Localization Guard
