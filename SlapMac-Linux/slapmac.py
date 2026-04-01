@@ -36,6 +36,7 @@ class SlapMacApp:
         self.current_version = "1.0.0"
         self.latest_tag = None
         self.language_code = "en"
+        self.translations = {}
         self.languages = [
             ("en", "🇺🇸 English"), ("vi", "🇻🇳 Tieng Viet"), ("es", "🇪🇸 Espanol"), ("fr", "🇫🇷 Francais"),
             ("de", "🇩🇪 Deutsch"), ("it", "🇮🇹 Italiano"), ("pt", "🇵🇹 Portugues"), ("ru", "🇷🇺 Russkiy"),
@@ -43,6 +44,7 @@ class SlapMacApp:
             ("th", "🇹🇭 Thai"), ("id", "🇮🇩 Bahasa Indonesia"), ("ms", "🇲🇾 Bahasa Melayu"), ("hi", "🇮🇳 Hindi"),
             ("ar", "🇸🇦 Arabic"), ("tr", "🇹🇷 Turkce"), ("pl", "🇵🇱 Polski"), ("nl", "🇳🇱 Nederlands")
         ]
+        self._load_i18n()
 
         # Resource directory
         if getattr(sys, 'frozen', False):
@@ -233,7 +235,48 @@ class SlapMacApp:
         self.update_now_btn.config(text=self._t("updateNow"))
         self._check_updates(manual=False)
 
+    def _load_i18n(self):
+        i18n_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "i18n.json")
+        if not os.path.isfile(i18n_path):
+            return
+
+        try:
+            data = json.loads(open(i18n_path, "r", encoding="utf-8").read())
+            options = data.get("languageOptions", [])
+            loaded = []
+            for item in options:
+                code = str(item.get("code", "")).strip()
+                label = str(item.get("label", "")).strip()
+                flag = str(item.get("flag", "")).strip()
+                if code and label and flag:
+                    loaded.append((code, f"{self._flag_to_emoji(flag)} {label}"))
+            if loaded:
+                self.languages = loaded
+
+            translations = data.get("translations", {})
+            if isinstance(translations, dict):
+                self.translations = {
+                    code: vals for code, vals in translations.items() if isinstance(vals, dict)
+                }
+        except Exception:
+            self.translations = {}
+
+    @staticmethod
+    def _flag_to_emoji(code):
+        code = (code or "").upper()
+        if len(code) != 2:
+            return ""
+        return chr(127397 + ord(code[0])) + chr(127397 + ord(code[1]))
+
     def _t(self, key):
+        if self.translations:
+            en = self.translations.get("en", {})
+            lang = self.translations.get(self.language_code, {})
+            if key in lang:
+                return lang[key]
+            if key in en:
+                return en[key]
+
         vi = {
             "language": "Ngon ngu", "pause": "⏸ Tam dung", "resume": "▶ Tiep tuc", "testSound": "🔊 Thu am thanh",
             "soundsLoaded": "{0} am thanh da tai", "checkUpdate": "Kiem tra cap nhat", "updateNow": "Cap nhat ngay",

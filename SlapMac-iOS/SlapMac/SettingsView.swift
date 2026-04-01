@@ -25,6 +25,15 @@ struct SettingsView: View {
         ("th", "🇹🇭 Thai"), ("id", "🇮🇩 Bahasa Indonesia"), ("ms", "🇲🇾 Bahasa Melayu"), ("hi", "🇮🇳 Hindi"),
         ("ar", "🇸🇦 Arabic"), ("tr", "🇹🇷 Turkce"), ("pl", "🇵🇱 Polski"), ("nl", "🇳🇱 Nederlands")
     ]
+    private static let bundleTranslations: [String: [String: String]] = {
+        guard let url = Bundle.main.url(forResource: "i18n", withExtension: "json"),
+              let data = try? Data(contentsOf: url),
+              let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let translations = obj["translations"] as? [String: [String: String]] else {
+            return [:]
+        }
+        return translations
+    }()
 
     private var currentVersion: String {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0.0"
@@ -219,6 +228,13 @@ struct SettingsView: View {
     }
 
     private func t(_ key: String) -> String {
+        if let value = Self.bundleTranslations[languageCode]?[key], !value.isEmpty {
+            return value
+        }
+        if let value = Self.bundleTranslations["en"]?[key], !value.isEmpty {
+            return value
+        }
+
         let vi: [String: String] = [
             "settings": "Cai dat", "language": "Ngon ngu", "sensitivity": "Do nhay", "volume": "Am luong", "cooldown": "Do tre",
             "reset": "Dat lai mac dinh", "version": "Phien ban", "checkUpdate": "Kiem tra cap nhat", "updateNow": "Cap nhat ngay",

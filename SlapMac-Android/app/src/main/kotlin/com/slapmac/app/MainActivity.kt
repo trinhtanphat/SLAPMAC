@@ -13,6 +13,7 @@ import android.widget.Spinner
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import org.json.JSONArray
+import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.net.URL
 
@@ -48,7 +49,7 @@ class MainActivity : AppCompatActivity() {
 
     private data class LanguageOption(val code: String, val label: String)
 
-    private val languages = listOf(
+    private var languages = mutableListOf(
         LanguageOption("en", "🇺🇸 English"), LanguageOption("vi", "🇻🇳 Tieng Viet"), LanguageOption("es", "🇪🇸 Espanol"),
         LanguageOption("fr", "🇫🇷 Francais"), LanguageOption("de", "🇩🇪 Deutsch"), LanguageOption("it", "🇮🇹 Italiano"),
         LanguageOption("pt", "🇵🇹 Portugues"), LanguageOption("ru", "🇷🇺 Russkiy"), LanguageOption("ja", "🇯🇵 Nihongo"),
@@ -57,6 +58,7 @@ class MainActivity : AppCompatActivity() {
         LanguageOption("hi", "🇮🇳 Hindi"), LanguageOption("ar", "🇸🇦 Arabic"), LanguageOption("tr", "🇹🇷 Turkce"),
         LanguageOption("pl", "🇵🇱 Polski"), LanguageOption("nl", "🇳🇱 Nederlands")
     )
+    private var externalI18n = mapOf<String, Map<String, String>>()
 
     private val baseI18n = mapOf(
         "pause" to "⏸ Pause", "resume" to "▶ Resume", "test" to "🔊 Test Sound", "sounds" to "%d sound(s) loaded",
@@ -94,6 +96,7 @@ class MainActivity : AppCompatActivity() {
 
         prefs = getSharedPreferences("slapmac", MODE_PRIVATE)
         languageCode = prefs.getString("language", "en") ?: "en"
+        loadI18nAsset()
 
         audio = AudioManager(this)
         detector = SlapDetector(this)
@@ -215,7 +218,61 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun t(key: String): String {
-        return i18n[languageCode]?.get(key) ?: i18n["en"]?.get(key) ?: key
+        return externalI18n[languageCode]?.get(key)
+            ?: externalI18n["en"]?.get(key)
+            ?: i18n[languageCode]?.get(key)
+            ?: i18n["en"]?.get(key)
+            ?: key
+    }
+
+    private fun loadI18nAsset() {
+        try {
+            val raw = assets.open("i18n.json").bufferedReader().use { it.readText() }
+            val root = JSONObject(raw)
+
+            val options = root.optJSONArray("languageOptions") ?: JSONArray()
+            val loaded = mutableListOf<LanguageOption>()
+            for (i in 0 until options.length()) {
+                val obj = options.optJSONObject(i) ?: continue
+                val code = obj.optString("code", "").trim()
+                val label = obj.optString("label", "").trim()
+                val flag = obj.optString("flag", "").trim()
+                if (code.isNotEmpty() && label.isNotEmpty() && flag.isNotEmpty()) {
+                    loaded.add(LanguageOption(code, "${flagToEmoji(flag)} $label"))
+                }
+            }
+            if (loaded.isNotEmpty()) {
+                languages = loaded
+            }
+
+            val translationsObj = root.optJSONObject("translations") ?: JSONObject()
+            val map = mutableMapOf<String, Map<String, String>>()
+            val langKeys = translationsObj.keys()
+            while (langKeys.hasNext()) {
+                val code = langKeys.next()
+                val obj = translationsObj.optJSONObject(code) ?: continue
+                val dict = mutableMapOf<String, String>()
+                val dictKeys = obj.keys()
+                while (dictKeys.hasNext()) {
+                    val k = dictKeys.next()
+                    dict[k] = obj.optString(k)
+                }
+                map[code] = dict
+            }
+            if (map.isNotEmpty()) {
+                externalI18n = map
+            }
+        } catch (_: Exception) {
+            // Keep in-code fallback translations.
+        }
+    }
+
+    private fun flagToEmoji(code: String): String {
+        if (code.length != 2) return ""
+        val upper = code.uppercase()
+        val first = Character.codePointAt(upper, 0) - 65 + 0x1F1E6
+        val second = Character.codePointAt(upper, 1) - 65 + 0x1F1E6
+        return String(Character.toChars(first)) + String(Character.toChars(second))
     }
 
     private fun applyLanguage() {

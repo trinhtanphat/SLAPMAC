@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.IO;
 using System.Net.Http;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -18,6 +19,7 @@ namespace SlapMac
         private readonly AudioManager _audio;
         private readonly string _currentVersion;
         private string _language = "en";
+        private readonly Dictionary<string, Dictionary<string, string>> _externalTranslations = new();
 
         private Label _updateStatusLabel = null!;
         private Button _updateNowBtn = null!;
@@ -39,7 +41,47 @@ namespace SlapMac
             _audio = audio;
             _currentVersion = Application.ProductVersion;
             _language = (Application.UserAppDataRegistry.GetValue("Language", "en") as string) ?? "en";
+            LoadI18n();
             InitializeUI();
+        }
+
+        private void LoadI18n()
+        {
+            try
+            {
+                var i18nPath = Path.Combine(Application.StartupPath, "Resources", "i18n.json");
+                if (!File.Exists(i18nPath))
+                {
+                    return;
+                }
+
+                var content = File.ReadAllText(i18nPath);
+                using var doc = JsonDocument.Parse(content);
+                if (!doc.RootElement.TryGetProperty("translations", out var translations) || translations.ValueKind != JsonValueKind.Object)
+                {
+                    return;
+                }
+
+                foreach (var lang in translations.EnumerateObject())
+                {
+                    if (lang.Value.ValueKind != JsonValueKind.Object)
+                        continue;
+
+                    var dict = new Dictionary<string, string>();
+                    foreach (var entry in lang.Value.EnumerateObject())
+                    {
+                        if (entry.Value.ValueKind == JsonValueKind.String)
+                        {
+                            dict[entry.Name] = entry.Value.GetString() ?? string.Empty;
+                        }
+                    }
+                    _externalTranslations[lang.Name] = dict;
+                }
+            }
+            catch
+            {
+                _externalTranslations.Clear();
+            }
         }
 
         private void InitializeUI()
@@ -314,6 +356,11 @@ namespace SlapMac
 
         private string L(string key)
         {
+            if (_externalTranslations.TryGetValue(_language, out var extLang) && extLang.TryGetValue(key, out var extVal) && !string.IsNullOrWhiteSpace(extVal))
+                return extVal;
+            if (_externalTranslations.TryGetValue("en", out var extEn) && extEn.TryGetValue(key, out var extEnVal) && !string.IsNullOrWhiteSpace(extEnVal))
+                return extEnVal;
+
             static Dictionary<string, string> En() => new()
             {
                 ["title"] = "SlapMac Settings ⚙️",

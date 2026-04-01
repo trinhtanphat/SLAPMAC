@@ -88,6 +88,9 @@ jobs:
       - name: Validate i18n coverage
         run: python3 scripts/validate-i18n.py
 
+      - name: Validate platform i18n resources
+        run: python3 scripts/validate-platform-i18n.py
+
   # ============================================================
   # Job 1: Build macOS App
   # ============================================================

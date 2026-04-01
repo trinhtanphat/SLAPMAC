@@ -417,6 +417,9 @@ git push origin v1.0.12
 ```bash
 # Validate extension localization (20 languages + key consistency)
 python scripts/validate-i18n.py
+
+# Validate localization resources for all platforms
+python scripts/validate-platform-i18n.py
 ```
 
 Release workflow is tag-driven only (`vX.Y.Z`) and will fail if any app version does not match the pushed tag.

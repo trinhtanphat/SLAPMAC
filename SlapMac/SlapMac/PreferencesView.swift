@@ -18,6 +18,15 @@ struct PreferencesView: View {
         ("th", "🇹🇭 Thai"), ("id", "🇮🇩 Bahasa Indonesia"), ("ms", "🇲🇾 Bahasa Melayu"), ("hi", "🇮🇳 Hindi"),
         ("ar", "🇸🇦 Arabic"), ("tr", "🇹🇷 Turkce"), ("pl", "🇵🇱 Polski"), ("nl", "🇳🇱 Nederlands")
     ]
+    private static let bundleTranslations: [String: [String: String]] = {
+        guard let url = Bundle.main.url(forResource: "i18n", withExtension: "json"),
+              let data = try? Data(contentsOf: url),
+              let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let translations = obj["translations"] as? [String: [String: String]] else {
+            return [:]
+        }
+        return translations
+    }()
 
     private let tagsApi = URL(string: "https://api.github.com/repos/trinhtanphat/SLAPMAC/tags?per_page=20")!
     private let releasesUrl = URL(string: "https://github.com/trinhtanphat/SLAPMAC/releases/latest")!
@@ -237,6 +246,13 @@ struct PreferencesView: View {
 
 private extension PreferencesView {
     func t(_ key: String) -> String {
+        if let value = Self.bundleTranslations[languageCode]?[key], !value.isEmpty {
+            return value
+        }
+        if let value = Self.bundleTranslations["en"]?[key], !value.isEmpty {
+            return value
+        }
+
         let vi: [String: String] = [
             "preferences": "Cai dat", "language": "Ngon ngu", "detectionSensitivity": "Do nhay phat hien", "volume": "Am luong",
             "cooldown": "Do tre (giay giua cac lan phat)", "launchAtLogin": "Khoi dong cung he thong", "version": "Phien ban",
