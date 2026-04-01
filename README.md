@@ -255,16 +255,36 @@ python3 slapmac.py
 | **Microphone** | Web Audio API | Any laptop with mic |
 
 ### Install
+#### Option A: Install from Release ZIP
 1. Download `SlapMac-Extension.zip` from [Releases](../../releases/latest)
 2. Extract the ZIP completely
 3. Open the extracted folder and confirm it contains `manifest.json`, `background/`, `popup/`, and `icons/`
-4. Open `chrome://extensions`
-5. Enable **Developer mode** (top right)
-6. Click **Load unpacked**
-7. Select the extracted `SlapMac-Extension` folder
-8. Open the browser extensions menu and pin SlapMac
-9. Click the SlapMac icon in the toolbar to open the popup
-10. If using **Microphone** mode, allow microphone access when prompted
+
+#### Option B: Install directly from this source repo
+1. Clone this repo and open folder `SlapMac-Extension/`
+2. Confirm files exist: `manifest.json`, `popup/`, `background/`, `icons/`
+3. If PNG icons are missing in `icons/`, run `generate-icons.sh` (or use existing `icon16.png`, `icon48.png`, `icon128.png`)
+
+#### Load Unpacked (by browser)
+- **Chrome:** open `chrome://extensions`
+- **Edge:** open `edge://extensions`
+- **Brave:** open `brave://extensions`
+
+Then:
+1. Enable **Developer mode**
+2. Click **Load unpacked**
+3. Select folder `SlapMac-Extension`
+4. Pin SlapMac from extensions menu
+5. Click the SlapMac icon to open popup
+6. Choose **Microphone** mode (recommended for desktop/laptop)
+7. Allow microphone permission when browser asks
+
+#### First-run Checklist
+- Status shows **Enabled**
+- Detection mode is **Microphone (Desktop)**
+- Popup remains open while testing
+- Press **Test Sound** once to confirm audio playback
+- Tap/slap device and verify counter increases
 
 ### How To Use
 - Keep the popup open while detection is running
@@ -277,6 +297,8 @@ python3 slapmac.py
 - If **Load unpacked** fails: select the folder that directly contains `manifest.json`
 - If the icon is missing: pin SlapMac from the browser extensions menu
 - If the popup closes: slap detection stops
+- If no sound plays: check tab/browser audio is not muted and press **Test Sound**
+- If microphone was denied: open site/extension permissions and allow microphone, then reopen popup
 - If you want one-click install: this must be published to the Chrome Web Store first
 
 ### Publisher Notes
